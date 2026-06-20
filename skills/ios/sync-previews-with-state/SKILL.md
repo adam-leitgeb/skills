@@ -45,8 +45,18 @@ fun OnboardingScreenPreview() {
 }
 ```
 
+## Preview helpers (`+Preview` files) count too
+
+Presentation **State models** have companion preview factories — `previewSingle()` / `previewList()` — living in a sibling `{ModelName}+Preview.kt` file (see `state-model-preview-helpers`). When you change a State model's fields, you must update **both**:
+
+1. The inline `#Preview` / `@Preview` blocks that construct the State (above).
+2. Every `previewSingle()` / `previewList()` / variant in the model's `+Preview` file — they construct the model directly and will fail to compile if a field is added, removed, or renamed.
+
+Treat the `+Preview` file as part of the same edit, never a follow-up.
+
 ## Rules
 
 - Named arguments in previews must stay in sync with the `State` data class signature.
 - If a new field has no sensible default, supply a representative stub value in the preview.
 - Never leave a preview with a stale / missing field — it will fail to compile.
+- The same applies to `{ModelName}+Preview.kt` helper files — update them in lockstep with the State model.
