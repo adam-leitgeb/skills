@@ -4,7 +4,6 @@ description: Port an existing iOS SwiftUI screen to Android Jetpack Compose, mat
 user-invocable: false
 ---
 
-
 # Android Implementation from iOS Guide
 
 This guide describes how to implement Android (Jetpack Compose) versions of features that already exist on iOS (SwiftUI). Follow these steps to ensure consistency across platforms.
@@ -25,7 +24,6 @@ Before starting:
 - **iOS implementation exists**: The feature should be fully implemented on iOS
 - **Shared ViewModel exists**: ViewModel should be in `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/{feature_name}/presentation/`
 - **Navigation route exists**: TemplateAppScene should be defined in shared module
-
 
 ## 🔍 Step 1: Analyze iOS Implementation
 
@@ -81,7 +79,6 @@ private struct Content: View {
 | `.padding(.top)` | `.padding(top = Spacing.S)` | Use `Spacing` constants |
 | `.padding(.bottom)` | `.padding(bottom = Spacing.S)` | Use `Spacing` constants |
 | `.safeAreaInset(edge: .bottom)` | `Box` with `Alignment.BottomCenter` | Position button at bottom |
-
 
 ## 🎨 Step 2: Map Design System Elements
 
@@ -170,7 +167,6 @@ Image(
 )
 ```
 
-
 ## 🧩 Step 3: Identify Shared Components
 
 ### 3.1 Common Shared Components
@@ -210,7 +206,6 @@ COPrimaryButton(
 - iOS uses `action:` closure, Android uses `onClick:` lambda
 - iOS uses `.shared` for strings, Android uses direct object access
 - iOS uses `()` for function calls, Android uses direct property access
-
 
 ## 🏗️ Step 4: Create Android Screen Structure
 
@@ -543,7 +538,6 @@ private fun PracticeRow(...) { ... }
 - ✅ Easier maintenance - Changes are localized to specific composables
 - ✅ Better performance - Compose can skip recomposition of unchanged composables
 
-
 ## 📐 Step 5: Layout Implementation
 
 ### 5.1 PaddingValues Usage
@@ -648,7 +642,6 @@ LazyColumn(
 }
 ```
 
-
 ## 🔗 Step 6: Navigation Integration
 
 ### 6.1 Update App.kt
@@ -686,7 +679,6 @@ Ensure route exists in:
 - `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/library/navigation/mapToDestination.kt`
 - Should already exist if iOS implementation is complete
 
-
 ## ✅ Step 7: Verification Checklist
 
 ### 7.1 Structure Checklist
@@ -723,7 +715,6 @@ Ensure route exists in:
 - [ ] Import statement added for screen composable
 - [ ] `NavController` passed to screen
 - [ ] Back button shown if iOS has `.navigationBarHidden(false)`
-
 
 ## 🎯 Step 8: Common Patterns Reference
 
@@ -1005,7 +996,6 @@ private fun PracticeRow(
 }
 ```
 
-
 ## 🚨 Common Mistakes to Avoid
 
 ### ❌ Structure Mistakes
@@ -1032,7 +1022,6 @@ private fun PracticeRow(
 - **Wrong alignment** - Use `Alignment.BottomCenter` for bottom buttons
 - **Missing `key` parameter** - LazyColumn items need unique keys
 
-
 ## 📚 Reference Files
 
 ### iOS Reference
@@ -1050,7 +1039,6 @@ private fun PracticeRow(
 - Strings: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/{feature_name}/presentation/{FeatureName}Strings.kt`
 - Design System: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/library/design/`
 
-
 ## 💡 Tips
 
 1. **Start with structure** - Create the top-level screen and Content composable first
@@ -1062,6 +1050,3 @@ private fun PracticeRow(
 7. **Verify shared components** - Check if components exist before creating new ones
 8. **Follow naming conventions** - Use same naming as iOS where possible
 9. **Use MARK comments** - Organize composables with MARK comments for better navigation
-
-
-This guide ensures consistent Android implementations that match iOS designs and leverage shared components effectively.

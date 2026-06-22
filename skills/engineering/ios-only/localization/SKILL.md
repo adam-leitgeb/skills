@@ -4,7 +4,6 @@ description: iOS-only localization — Kotlin key objects + an Xcode String Cata
 user-invocable: false
 ---
 
-
 # Localization System (iOS-only)
 
 This iOS-only app localizes via Kotlin key objects backed by an Xcode String Catalog
@@ -67,12 +66,12 @@ extension String {
 ```
 
 ## Supported Languages
-- 🇬🇧 English (en) - source language
-- 🇦🇪 Arabic (ar)
-- 🇩🇪 German (de)
-- 🇪🇸 Spanish (es)
-- 🇫🇷 French (fr)
-- 🇨🇳 Chinese Simplified (zh-Hans)
+- English (en) - source language
+- Arabic (ar)
+- German (de)
+- Spanish (es)
+- French (fr)
+- Chinese Simplified (zh-Hans)
 
 ## Usage in Swift Views
 

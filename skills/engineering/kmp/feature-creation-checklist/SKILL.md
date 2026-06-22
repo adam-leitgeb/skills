@@ -15,7 +15,6 @@ Before starting, decide on:
 - **Feature display name**: PascalCase for classes (e.g., `Result`, `PracticeSession`)
 - **Package path**: `com.jetbrains.kmpapp.features.{feature_name}`
 
-
 ## ✅ Step-by-Step Checklist
 
 ### 1. Shared Module (commonMain) - Core Feature Files
@@ -191,7 +190,6 @@ val {featureName}Module = module {
 - [ ] Add import: `import com.jetbrains.kmpapp.features.{feature_name}.di.{featureName}Module`
 - [ ] Add module to list: `{featureName}Module,`
 
-
 ### 2. TemplateAppScene Integration
 
 #### 2.1 Add TemplateAppScene to Shared Module
@@ -214,7 +212,6 @@ val {featureName}Module = module {
 #### 2.4 Add Analytics Key (optional – if your project has analytics)
 - [ ] If using analytics, add case to your scene analytics mapping: `TemplateAppScene.{FeatureName} -> "{feature_name}"`
   - [ ] Use snake_case for the analytics screen ID (e.g., `change_country`, `practice_session`)
-
 
 ### 3. iOS Implementation
 
@@ -272,7 +269,6 @@ private struct Content: View {
 - [ ] Add import: `import com.jetbrains.kmpapp.features.{feature_name}.presentation.{FeatureName}ViewModel`
 - [ ] Add property: `val {featureName}ViewModel: {FeatureName}ViewModel by inject()`
 
-
 ### 4. Android Implementation (Optional - if needed)
 
 #### 4.1 Create Android Composable
@@ -280,7 +276,6 @@ private struct Content: View {
 - [ ] Create `{FeatureName}Screen.kt` composable
 - [ ] Inject ViewModel using Koin
 - [ ] Implement UI using Jetpack Compose
-
 
 ### 5. Verification Checklist
 
@@ -296,7 +291,6 @@ private struct Content: View {
 - [ ] iOS View follows the standard pattern
 - [ ] All TODO comments addressed or documented
 
-
 ## 📝 Naming Conventions Reference
 
 | Type | Convention | Example |
@@ -311,7 +305,6 @@ private struct Content: View {
 | Action methods | `on{ActionName}()` | `onTapContinue()`, `onSelectItem()` |
 | iOS View | `{FeatureName}View` | `ResultView` |
 | Package | `com.jetbrains.kmpapp.features.{feature_name}` | `com.jetbrains.kmpapp.features.result` |
-
 
 ## 🔍 Quick Reference: File Locations
 
@@ -332,7 +325,6 @@ private struct Content: View {
 ### Android
 - Navigation: `composeApp/src/androidMain/kotlin/com/jetbrains/kmpapp/library/navigation/mapToDestination.kt`
 
-
 ## 💡 Tips
 
 1. **Start with the skeleton**: Create all files with TODO comments first, then implement
@@ -342,7 +334,6 @@ private struct Content: View {
 5. **State is immutable**: Always use `state.copy(...)` for updates
 6. **Error handling**: Use cases should handle errors internally, return `DomainResult` or empty values
 7. **Navigation**: For screens that navigate, use `NavigationViewModel` and `navigate(NavigationState)`; use `HandleNavigation(viewModel, navController)` in the UI. For screens that do not navigate, use `BaseViewModel` and do not call `HandleNavigation`.
-
 
 ## 🚨 Common Mistakes to Avoid
 
@@ -355,6 +346,3 @@ private struct Content: View {
 - ❌ ViewModels calling repositories directly (must use UseCases)
 - ❌ Missing required modifiers in iOS View (`.onAppear`, `.handleNavigation`)
 - ❌ Wrong package naming (should use snake_case for feature names)
-
-
-This checklist ensures consistent feature creation across the entire Kotlin Multiplatform project.

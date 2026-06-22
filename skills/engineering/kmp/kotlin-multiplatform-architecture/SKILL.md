@@ -6,7 +6,6 @@ paths:
 user-invocable: false
 ---
 
-
 # Kotlin Multiplatform Clean Architecture Rules
 
 ## 🏗️ Architecture Patterns

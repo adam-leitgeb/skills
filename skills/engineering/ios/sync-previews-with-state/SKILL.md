@@ -4,7 +4,6 @@ description: Keep SwiftUI and Compose previews in sync when ViewModel State chan
 user-invocable: false
 ---
 
-
 # Sync Previews When ViewModel State Changes
 
 Whenever you add, remove, or rename a property on a `ViewModel.State` data class, **immediately update every preview that constructs that State**.

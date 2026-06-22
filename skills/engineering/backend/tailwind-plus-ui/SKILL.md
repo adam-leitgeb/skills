@@ -9,17 +9,15 @@ user-invocable: false
 
 ## UI approach (admin console)
 
-I paid for **Tailwind Plus** specifically to avoid making visual decisions
-from scratch — I want worry-free, smooth, consistent UI. Treat the Tailwind
-Plus HTML blocks as the **design system of record**:
+Treat the **Tailwind Plus** HTML blocks as the **design system of record**:
 
-- When I reference a Tailwind Plus block (by name, screenshot, or pasted
-  HTML), **use it as-is**: keep the markup structure, class names, wrapper
-  elements, and SVGs verbatim. Don't substitute "equivalent" markup, rename
-  classes, or trim things you think are redundant.
-- Only change the **content** of a block to fit our data — text, Go
-  html/template loops/conditionals, HTMX attributes. Structural or visual
-  changes only when I explicitly ask.
+- When the user references a Tailwind Plus block (by name, screenshot, or
+  pasted HTML), **use it as-is**: keep the markup structure, class names,
+  wrapper elements, and SVGs verbatim. Don't substitute "equivalent" markup,
+  rename classes, or trim things you think are redundant.
+- Only change the **content** of a block to fit the data — text, Go
+  html/template loops/conditionals, HTMX attributes. Make structural or
+  visual changes only when explicitly asked.
 - **Don't mix in other component libraries.** No DaisyUI, Preline, FlyonUI,
   Headless UI ports, Alpine. Pure Tailwind + Tailwind Plus only.
 
@@ -41,7 +39,6 @@ toggle. **Vendor that library and use those elements verbatim.**
 
 ### The bottom line
 
-I'm a mobile developer, not a web/backend developer. I bought Tailwind Plus
-so I don't have to argue about whether `data-closed:translate-x-full`
-belongs on a drawer. Default to pasting blocks faithfully — animations,
-classes, structure, and all.
+Default to pasting blocks faithfully — animations, classes, structure, and
+all. Don't second-guess details like whether `data-closed:translate-x-full`
+belongs on a drawer; keep the block as shipped.

@@ -4,7 +4,6 @@ description: Structure and conventions for Android/Kotlin unit tests in a KMP pr
 user-invocable: false
 ---
 
-
 # Android Unit Test Structure
 
 The `androidUnitTest` source set contains unit tests for the **shared code** (commonMain). These tests run on the JVM/Android and verify the shared business logic, ViewModels, UseCases, and data layer. The structure must mirror `commonMain` for consistency and discoverability.

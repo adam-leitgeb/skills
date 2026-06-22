@@ -4,7 +4,6 @@ description: Localization for a KMP app (shared + Android + iOS) — single cano
 user-invocable: false
 ---
 
-
 # Localization System (KMP)
 
 Strings are authored **once** in a canonical JSON and consumed by **both** Android
