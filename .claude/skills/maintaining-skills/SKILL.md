@@ -1,6 +1,6 @@
 ---
 name: maintaining-skills
-description: Use when adding, removing, renaming, or moving any skill under skills/** in this repo, or when changing a category or project-type mapping. Keeps project-types.conf, README.md, and scripts/seed-from-existing.sh in sync so nothing goes stale.
+description: Use when adding or renaming a skill CATEGORY (a folder under skills/) or a project TYPE in this repo. Keeps project-types.conf and README.md in sync so a new category/type isn't silently left uninstalled. Adding a skill to an existing category needs none of this.
 ---
 
 # Maintaining the skills repo
@@ -10,42 +10,39 @@ generated Cursor rules. A skill is a folder `skills/<category>/<name>/SKILL.md`.
 A **category** is a path under `skills/` that directly contains skill folders
 (e.g. `engineering/kmp`, `engineering/common`, `productivity`).
 
-Whenever you **add, remove, rename, or move** a skill — or add/rename a category
-or project type — update ALL of the following in the same change. Forgetting one
-leaves it stale (we already shipped a broken `seed-from-existing.sh` once this
-way):
+`update-skills.sh` installs, per project type, every skill in that type's
+categories — it globs `<category>/*/SKILL.md` and is depth-agnostic.
 
-1. **The skill** — `skills/<category>/<name>/SKILL.md` with `name` +
-   `description` frontmatter (add `paths:` globs if it's path-scoped). Edit the
-   SKILL.md here; never hand-edit a generated `.cursor/rules/*.mdc` in a
-   consuming project — the sync regenerates those pointers.
-2. **`project-types.conf`** — ensure the skill's category is mapped to every
-   project type that should receive it. Categories are written as paths
-   (`engineering/kmp`, not `kmp`). The sync globs `<category>/*/SKILL.md` and is
-   depth-agnostic.
-3. **`scripts/seed-from-existing.sh`** — add / remove / re-path the matching
-   `seed` line so a re-seed reproduces the current tree. It copies the full
-   SKILL.md from each sibling project's `.claude/skills/` (those are synced from
-   here). Skills authored only in this repo — `productivity/*` — have no
-   external source and are deliberately NOT seeded; note them in the comment.
-4. **`README.md`** — update the Layout tree and the project-types table.
+## When you do NOT need to touch anything
+
+Adding, editing, or removing a skill inside an **existing** category is fully
+automatic — the sync globs the category, so the new skill ships on the next
+`make update_skills`. No config changes. (Just write the `SKILL.md` with `name`
++ `description` frontmatter, and `paths:` globs if it's path-scoped.)
+
+## When you DO need to keep things in sync
+
+- **New category** (a new folder of skills, e.g. `engineering/desktop`): map it
+  in `project-types.conf` to every type that should receive it — otherwise it is
+  silently never installed. Then update the Layout tree and project-types table
+  in `README.md`.
+- **New / renamed project type**: add it to `project-types.conf`, and update the
+  README's type list and table (the type names appear in a couple of places).
+
+## Always
+
+Never hand-edit a generated `.cursor/rules/*.mdc` in a consuming project — edit
+the `SKILL.md` here; the sync regenerates the pointers.
 
 ## Verify before committing
 
-Run both checks:
+Sync into a throwaway dir for each affected type and confirm the installed set:
 
-- **Sync** installs the right set per type:
-  ```sh
-  for t in kmp backend ios other; do
-    tmp="$(mktemp -d)"
-    bash scripts/update-skills.sh --type "$t" --project "$tmp" >/dev/null \
-      && { printf '%s: ' "$t"; ls "$tmp/.claude/skills" | grep -v '^.managed$' | paste -sd' ' -; }
-    rm -rf "$tmp"
-  done
-  ```
-- **Seed is current** — re-running it must leave the tree unchanged:
-  ```sh
-  bash scripts/seed-from-existing.sh && git status --porcelain skills/
-  ```
-  Non-empty output means `seed-from-existing.sh` drifted from the actual skills
-  (or a source project drifted) — reconcile before committing.
+```sh
+for t in kmp backend ios other; do
+  tmp="$(mktemp -d)"
+  bash scripts/update-skills.sh --type "$t" --project "$tmp" >/dev/null \
+    && { printf '%s: ' "$t"; ls "$tmp/.claude/skills" | grep -v '^.managed$' | paste -sd' ' -; }
+  rm -rf "$tmp"
+done
+```

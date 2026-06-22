@@ -17,7 +17,6 @@ skills/                # the skills, grouped by category (Mat Pocock style)
 project-types.conf     # project type -> categories mapping
 scripts/
   update-skills.sh     # the sync worker (clone-free; run against a project)
-  seed-from-existing.sh# one-time migration from the old per-project rules
 Makefile.template      # the `update_skills` target projects copy in
 ```
 
@@ -68,10 +67,3 @@ manifest** — a hand-written `.claude/skills/<x>/` or a local `.cursor/rules/*.
 — is never touched. So a project can keep its own skills alongside the shared
 ones (e.g. Guardian's `ticket-spec`, which stays local because it's hardwired to
 Guardian's Notion).
-
-## Re-seeding from existing projects
-
-`scripts/seed-from-existing.sh` regenerates the `skills/` tree from the canonical
-source projects (KMP rules come from `fosh-labs-kmp-template`, which is treated as
-canonical where copies have drifted). Run it to re-import after editing a rule in
-a project, or just edit the SKILL.md here directly.
