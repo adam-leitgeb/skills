@@ -9,7 +9,8 @@ Skills are the single source of truth; Cursor rules are generated thin pointers 
 skills/                # the skills, grouped by category (Mat Pocock style)
   engineering/         #   universal (git-commit)
   kmp/                 #   Kotlin Multiplatform: shared / Android / cross-platform
-  ios/                 #   SwiftUI / iOS / watchOS
+  ios/                 #   SwiftUI / iOS / watchOS (shared by kmp + ios types)
+  ios-only/            #   iOS-only conventions (e.g. .xcstrings localization) — ios type only
   backend/             #   Go services
 project-types.conf     # project type -> categories mapping
 scripts/
@@ -46,9 +47,9 @@ Defined in `project-types.conf` — a type maps to a list of categories:
 
 | Type | Categories | Notes |
 |------|------------|-------|
-| `kmp` | engineering + kmp + ios | KMP spans both platforms → everything except backend |
+| `kmp` | engineering + kmp + ios | KMP spans both platforms → everything except backend. Localizes via `localization-kmp` (in `kmp`); excludes `ios-only` |
 | `backend` | engineering + backend | Go services → no mobile rules |
-| `ios` | engineering + ios | iOS / watchOS-only app |
+| `ios` | engineering + ios + ios-only | iOS / watchOS-only app; `ios-only` carries the `.xcstrings` localization skill |
 | `other` | engineering | universal only |
 
 Edit that file to add a type or remix the mapping; the next sync picks it up.

@@ -1,13 +1,15 @@
 ---
 name: localization
-description: Cross-platform localization approach for a KMP app with iOS. Use when adding or editing localized strings.
+description: iOS-only localization — Kotlin key objects + an Xcode String Catalog (Localizable.xcstrings) resolved via NSLocalizedString. Use when adding or editing localized strings in an iOS-only app. (KMP apps use the localization-kmp skill instead.)
 user-invocable: false
 ---
 
 
-# Localization System
+# Localization System (iOS-only)
 
-This project uses a cross-platform localization approach for the Kotlin Multiplatform Mobile (KMM) app with iOS.
+This iOS-only app localizes via Kotlin key objects backed by an Xcode String Catalog
+(`Localizable.xcstrings`) resolved with `NSLocalizedString`. (KMP projects do **not** use
+this approach — they author one canonical JSON with codegen; see the `localization-kmp` skill.)
 
 ## Architecture
 
