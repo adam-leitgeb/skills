@@ -4,8 +4,7 @@ description: Adding watchOS support to a Kotlin Multiplatform iOS app where the 
 user-invocable: false
 ---
 
-
-# Cursor Rules: Adding watchOS Support to Kotlin Multiplatform iOS App
+# Adding watchOS Support to a Kotlin Multiplatform iOS App
 
 ## Overview
 When adding watchOS support to a Kotlin Multiplatform iOS app where the watch app needs to depend on shared code, follow these essential steps to ensure proper build configuration.

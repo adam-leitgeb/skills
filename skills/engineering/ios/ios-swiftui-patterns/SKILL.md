@@ -6,7 +6,6 @@ paths:
 user-invocable: false
 ---
 
-
 # iOS SwiftUI Patterns & Rules
 
 ## 🏗️ View Architecture
@@ -288,5 +287,3 @@ extension Kmp_observableviewmodel_coreViewModel: @retroactive ViewModel {}
 - Use semantic SwiftUI components when possible
 - Provide appropriate accessibility labels for custom components
 - Ensure proper contrast and touch targets
-
-This rule set ensures consistent, maintainable, and scalable iOS SwiftUI code that integrates seamlessly with the KMP shared logic layer.
