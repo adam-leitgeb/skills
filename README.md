@@ -8,6 +8,7 @@ Skills are the single source of truth; Cursor rules are generated thin pointers 
 ```
 skills/                # the skills, grouped by category (Mat Pocock style)
   engineering/         #   universal (git-commit)
+  productivity/        #   workflow helpers (grilling, handoff) — every type
   kmp/                 #   Kotlin Multiplatform: shared / Android / cross-platform
   ios/                 #   SwiftUI / iOS / watchOS (shared by kmp + ios types)
   ios-only/            #   iOS-only conventions (e.g. .xcstrings localization) — ios type only
@@ -47,10 +48,13 @@ Defined in `project-types.conf` — a type maps to a list of categories:
 
 | Type | Categories | Notes |
 |------|------------|-------|
-| `kmp` | engineering + kmp + ios | KMP spans both platforms → everything except backend. Localizes via `localization-kmp` (in `kmp`); excludes `ios-only` |
-| `backend` | engineering + backend | Go services → no mobile rules |
-| `ios` | engineering + ios + ios-only | iOS / watchOS-only app; `ios-only` carries the `.xcstrings` localization skill |
-| `other` | engineering | universal only |
+| `kmp` | engineering + productivity + kmp + ios | KMP spans both platforms → everything except backend. Localizes via `localization-kmp` (in `kmp`); excludes `ios-only` |
+| `backend` | engineering + productivity + backend | Go services → no mobile rules |
+| `ios` | engineering + productivity + ios + ios-only | iOS / watchOS-only app; `ios-only` carries the `.xcstrings` localization skill |
+| `other` | engineering + productivity | universal only |
+
+`productivity` is appended to every type — those skills are platform-agnostic
+workflow helpers.
 
 Edit that file to add a type or remix the mapping; the next sync picks it up.
 
