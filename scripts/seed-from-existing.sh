@@ -52,44 +52,44 @@ skill_copy() {
 
 echo "Seeding skills into $SKILLS_ROOT"
 
-# --- engineering (universal) ---------------------------------------------
+# --- engineering/common (universal) --------------------------------------
 skill_copy "$PROJECTS_DIR/guardian/guardian-cloud/.claude/skills/git-commit/SKILL.md" \
-  engineering git-commit
+  engineering/common git-commit
 
-# --- backend (Go) ---------------------------------------------------------
+# --- engineering/backend (Go) --------------------------------------------
 skill_copy "$PROJECTS_DIR/guardian/guardian-cloud/.claude/skills/go-naming/SKILL.md" \
-  backend go-naming
+  engineering/backend go-naming
 skill_copy "$PROJECTS_DIR/guardian/guardian-cloud/.claude/skills/tailwind-plus-ui/SKILL.md" \
-  backend tailwind-plus-ui
+  engineering/backend tailwind-plus-ui
 
 # --- kmp (shared / Android / cross-platform) -----------------------------
 # Canonical source = fosh-labs-kmp-template (matches guardian-kmp; the other
 # copies have drifted and will be overwritten on their next sync).
 KMP="$PROJECTS_DIR/fosh-labs-kmp-template/.cursor/rules"
-skill_from_rule "$KMP/kotlin-multiplatform-ruleset.mdc" kmp kotlin-multiplatform-architecture \
+skill_from_rule "$KMP/kotlin-multiplatform-ruleset.mdc" engineering/kmp kotlin-multiplatform-architecture \
   "Kotlin Multiplatform Clean Architecture conventions — module/layer structure, MVVM, Koin DI, naming. Use when writing or editing Kotlin (.kt/.kts) in a KMP project." \
   "**/*.kt"
-skill_from_rule "$KMP/feature-creation-checklist.mdc" kmp feature-creation-checklist \
+skill_from_rule "$KMP/feature-creation-checklist.mdc" engineering/kmp feature-creation-checklist \
   "Step-by-step checklist for adding a new feature module to a KMP project (shared ViewModel, Android Compose, iOS SwiftUI). Use when creating a new feature or screen." \
   ""
-skill_from_rule "$KMP/android-implementation-from-ios.mdc" kmp android-implementation-from-ios \
+skill_from_rule "$KMP/android-implementation-from-ios.mdc" engineering/kmp android-implementation-from-ios \
   "Port an existing iOS SwiftUI screen to Android Jetpack Compose, matching structure and behavior. Use when implementing the Android side of a feature that already exists on iOS." \
   ""
-skill_from_rule "$KMP/android-unittest-structure.mdc" kmp android-unittest-structure \
+skill_from_rule "$KMP/android-unittest-structure.mdc" engineering/kmp android-unittest-structure \
   "Structure and conventions for Android/Kotlin unit tests in a KMP project. Use when writing or editing unit tests." \
   ""
 
-# --- ios (SwiftUI / iOS / watchOS) ---------------------------------------
-skill_from_rule "$KMP/ios-swiftui-patterns.mdc" ios ios-swiftui-patterns \
+# --- engineering/ios (SwiftUI / iOS / watchOS) ---------------------------
+skill_from_rule "$KMP/ios-swiftui-patterns.mdc" engineering/ios ios-swiftui-patterns \
   "SwiftUI patterns for the iOS app in a KMP project — view structure, view models, KMP interop. Use when writing or editing SwiftUI." \
   "**/*.swift"
-skill_from_rule "$PROJECTS_DIR/guardian/.cursor/rules/sync-previews-with-state.mdc" ios sync-previews-with-state \
+skill_from_rule "$PROJECTS_DIR/guardian/.cursor/rules/sync-previews-with-state.mdc" engineering/ios sync-previews-with-state \
   "Keep SwiftUI and Compose previews in sync when ViewModel State changes. Use when editing ViewModel state, Views, Screens, or Previews." \
   ""
-skill_from_rule "$PROJECTS_DIR/tally-counter-ios/.cursor/rules/localization.mdc" ios localization \
+skill_from_rule "$PROJECTS_DIR/tally-counter-ios/.cursor/rules/localization.mdc" engineering/ios localization \
   "Cross-platform localization approach for a KMP app with iOS. Use when adding or editing localized strings." \
   ""
-skill_from_rule "$PROJECTS_DIR/tally-counter-ios/.cursor/rules/watch-os-support-kmp.mdc" ios watch-os-support-kmp \
+skill_from_rule "$PROJECTS_DIR/tally-counter-ios/.cursor/rules/watch-os-support-kmp.mdc" engineering/ios watch-os-support-kmp \
   "Adding watchOS support to a Kotlin Multiplatform iOS app where the watch app depends on shared code. Use when configuring a watchOS target." \
   ""
 

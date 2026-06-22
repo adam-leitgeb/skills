@@ -7,12 +7,13 @@ Skills are the single source of truth; Cursor rules are generated thin pointers 
 
 ```
 skills/                # the skills, grouped by category (Mat Pocock style)
-  engineering/         #   universal (git-commit)
-  productivity/        #   workflow helpers (grilling, handoff) — every type
-  kmp/                 #   Kotlin Multiplatform: shared / Android / cross-platform
-  ios/                 #   SwiftUI / iOS / watchOS (shared by kmp + ios types)
-  ios-only/            #   iOS-only conventions (e.g. .xcstrings localization) — ios type only
-  backend/             #   Go services
+  engineering/         #   all dev skills, grouped by domain:
+    common/            #     universal (git-commit) — every type
+    kmp/               #     Kotlin Multiplatform: shared / Android / cross-platform
+    ios/               #     SwiftUI / iOS / watchOS (shared by kmp + ios types)
+    ios-only/          #     iOS-only conventions (e.g. .xcstrings localization) — ios type only
+    backend/           #     Go services
+  productivity/        #   platform-agnostic workflow helpers (grilling, handoff) — every type
 project-types.conf     # project type -> categories mapping
 scripts/
   update-skills.sh     # the sync worker (clone-free; run against a project)
@@ -48,13 +49,14 @@ Defined in `project-types.conf` — a type maps to a list of categories:
 
 | Type | Categories | Notes |
 |------|------------|-------|
-| `kmp` | engineering + productivity + kmp + ios | KMP spans both platforms → everything except backend. Localizes via `localization-kmp` (in `kmp`); excludes `ios-only` |
-| `backend` | engineering + productivity + backend | Go services → no mobile rules |
-| `ios` | engineering + productivity + ios + ios-only | iOS / watchOS-only app; `ios-only` carries the `.xcstrings` localization skill |
-| `other` | engineering + productivity | universal only |
+| `kmp` | common + productivity + kmp + ios | KMP spans both platforms → everything except backend. Localizes via `localization-kmp` (in `engineering/kmp`); excludes `ios-only` |
+| `backend` | common + productivity + backend | Go services → no mobile rules |
+| `ios` | common + productivity + ios + ios-only | iOS / watchOS-only app; `ios-only` carries the `.xcstrings` localization skill |
+| `other` | common + productivity | universal only |
 
-`productivity` is appended to every type — those skills are platform-agnostic
-workflow helpers.
+Category names above are shorthand for their paths under `skills/` —
+`common` is `engineering/common`, `kmp` is `engineering/kmp`, etc.
+`engineering/common` and `productivity` are included in every type.
 
 Edit that file to add a type or remix the mapping; the next sync picks it up.
 
