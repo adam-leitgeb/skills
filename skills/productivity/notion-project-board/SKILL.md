@@ -19,8 +19,15 @@ Appended to the end of the project's root page, in this order:
 ```
 # Tasks
 Backlog = not yet fully specced · Ready for development = full spec written, ready for a coding agent · In progress = being worked on · Done = merged
-[ <project name> Tasks  — inline board database ]
+[ <project name> Tasks  — inline database, "Board view" tab ]
 ```
+
+> **Heads-up on view tabs.** `notion-create-database` always auto-creates a
+> "Default view" (table) tab, and the MCP cannot delete, reorder, or retype a
+> view. So the finished database has **two** tabs — `Default view` (table) first,
+> then `Board view` — and Notion renders the *first* one (the table) by default.
+> Getting a board-*only* database (like the reference board) needs one manual
+> click in Notion. See [Default view](#notes).
 
 The database has exactly these properties:
 
@@ -95,19 +102,38 @@ GROUP BY "Status"
 SHOW "Name", "Task Type"
 ```
 
-### 6. Verify
+This adds `Board view` as a **second** view tab; the auto-created `Default view`
+(table) stays and remains the default. There is no MCP tool to delete, reorder, or
+convert it — see step 6 and the Default view note.
 
-`notion-fetch` the root page and confirm the order is: `# Tasks` heading → legend
-paragraph → the inline `<project name> Tasks` board, that the four `Status` columns
-read left-to-right `Backlog → Ready for development → In progress → Done`, and that
-`Task Type` has all 12 options. Share the board URL with the user.
+### 6. Verify, then offer the one manual cleanup
+
+`notion-fetch` the **database** (and the root page) and confirm:
+- page order is `# Tasks` heading → legend paragraph → the inline `<project name> Tasks` database;
+- a `board`-type view grouped by `Status` exists (read it from the `<views>` block);
+- the `Status` select options are, in order, `Backlog`, `Ready for development`, `In progress`, `Done` — this option order *is* the board's left-to-right column order (board group sort is `manual`);
+- `Task Type` has all 12 options.
+
+`notion-fetch` returns each view's config and the schema's option order, so all of
+the above is checkable; it does **not** render the board, so don't claim to have
+"seen" the columns — confirm via the option order.
+
+Then share the board URL and tell the user the one manual step the MCP can't do:
+to make the board the only/default view, open the database in Notion and delete the
+`Default view` (table) tab (or drag `Board view` to first). The reference board was
+finished this way.
 
 ## Notes
 
-- **Default view.** `notion-create-database` always creates a default table view, so
-  the board ends up with a `Board view` tab plus that default tab. The MCP has no
-  delete-view tool — leave it (it's harmless) or tell the user they can remove the
-  default tab manually if they want the board as the sole view.
+- **Default view (important — this is the one thing that isn't fully automatic).**
+  `notion-create-database` always creates a `Default view` (table) as the database's
+  **first** view, and Notion renders the first view by default. The board you add is
+  a second tab, so the inline embed shows the *table* until someone switches or
+  removes it. The MCP has **no** tool to delete, reorder, or change the type of a
+  view, so this cannot be fixed programmatically. To match the reference board (board
+  only), the user must delete the `Default view` tab in Notion (open the database →
+  click the `Default view` tab ▾ → Delete), or drag `Board view` to first. Always
+  surface this step; do not describe the leftover table tab as harmless.
 - **Scope.** Do not create example/sample tickets. The board ships empty.
 - **Re-runs.** This always creates a *new* data source. If a `<project name> Tasks`
   board may already exist, check first and confirm with the user before adding a
