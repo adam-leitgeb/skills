@@ -63,6 +63,22 @@ EOF
 )"
 ```
 
+## Merging into main
+
+`main` must have a strictly linear history — **no merge commits, no parallel streams**.
+
+- **Any branch merged into `main` is squash-merged into a single commit.** Never create a merge commit on `main`. The squash commit's subject follows the conventions above (`<type>(<scope>): <short description>`).
+- Merge commits **within** working branches are fine — squash only applies at the point a branch lands on `main`.
+
+### Sole exception: long-lived release/development branches
+
+When a project maintains both a `main` (release) branch and a long-lived `development` branch, use **classic merge commits** in *both* directions:
+
+- `development` → `main` (ship new features)
+- `main` → `development` (carry release/bugfix changes back)
+
+This is the only case where merge commits into `main` are allowed, and the reason is conflict management: squashing in this scenario would produce severe, repeated conflicts. Outside this specific release/development setup, always squash.
+
 ## Examples
 
 ```
