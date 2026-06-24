@@ -42,3 +42,11 @@ toggle. **Vendor that library and use those elements verbatim.**
 Default to pasting blocks faithfully — animations, classes, structure, and
 all. Don't second-guess details like whether `data-closed:translate-x-full`
 belongs on a drawer; keep the block as shipped.
+
+### References
+
+- **Icons** — default to Heroicons: https://heroicons.com/ . Use a different
+  icon pack only when the user specifies one.
+- **Color palette** — default to the Tailwind CSS color palette:
+  https://tailwindcss.com/docs/colors . Use a different palette only when the
+  user specifies one.
