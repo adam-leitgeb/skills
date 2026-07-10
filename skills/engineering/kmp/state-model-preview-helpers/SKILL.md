@@ -30,13 +30,16 @@ These are consumed by SwiftUI `#Preview` blocks and Compose `@Preview` functions
 
 ## File template
 
+`{package}` below is a placeholder for the project's own root package — use the actual
+one (read it from any existing source file), never a hardcoded vendor package.
+
 `ResultTileState+Preview.kt`:
 
 ```kotlin
-package com.foshlabs.<app>.features.result.presentation
+package {package}.features.result.presentation
 
-import com.foshlabs.<app>.library.design.color.ThemeColors
-import com.foshlabs.<app>.library.design.icon.AppIcon
+import {package}.library.design.color.ThemeColors
+import {package}.library.design.icon.AppIcon
 
 /**
  * Preview helpers for [ResultTileState].
@@ -106,7 +109,7 @@ data class ResultTileState(
 **Compose** — import the extension and call on the companion:
 
 ```kotlin
-import com.foshlabs.<app>.features.result.presentation.previewSingle
+import {package}.features.result.presentation.previewSingle
 
 @Preview(showBackground = true)
 @Composable
