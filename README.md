@@ -1,7 +1,9 @@
-# fosh-labs skills
+# skills
 
-Centralized Claude Code **skills** and Cursor **rules** for all fosh-labs projects.
-Skills are the single source of truth; Cursor rules are generated thin pointers to them.
+My personal Claude Code **skills** and Cursor **rules** — the coding conventions and
+workflow helpers I reuse across my projects, both personal and under **fosh-labs** (my
+one-person studio). Skills are the single source of truth; Cursor rules are generated
+thin pointers to them.
 
 ## Layout
 
@@ -38,9 +40,8 @@ This clones the repo to a temp dir, installs the skills for the chosen type into
 `.claude/skills/`, generates matching `.cursor/rules/*.mdc` pointers plus a
 `claude-skills-source-of-truth.mdc` meta-rule, and cleans up after itself.
 
-Set `SKILLS_REPO` once you push this repo to GitHub
-(`SKILLS_REPO=git@github.com:foshlabs/skills.git`), or point it at a local clone
-for testing.
+Point `SKILLS_REPO` at this repo
+(`SKILLS_REPO=git@github.com:adam-leitgeb/skills.git`), or at a local clone for testing.
 
 ## Project types
 

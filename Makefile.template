@@ -8,11 +8,11 @@
 # project, and cleans up. Project-specific skills/rules are preserved.
 # ---------------------------------------------------------------------------
 
-# Where the central repo lives. Override once you push it to GitHub:
-#   SKILLS_REPO=git@github.com:foshlabs/skills.git
+# Where the central skills repo lives. Override to point elsewhere:
+#   SKILLS_REPO=git@github.com:adam-leitgeb/skills.git
 # Or point at a local clone for testing:
 #   make update_skills SKILLS_REPO=/Users/adam/Developer/fosh\ labs/skills
-SKILLS_REPO ?= git@github.com:foshlabs/skills.git
+SKILLS_REPO ?= git@github.com:adam-leitgeb/skills.git
 SKILLS_REF  ?= main
 TYPE        ?=
 
