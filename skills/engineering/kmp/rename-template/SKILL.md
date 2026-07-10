@@ -33,7 +33,7 @@ work — that's why it isn't baked in).
 | Gradle project name | `KMP-App-Template-Native` | `settings.gradle.kts` |
 | Package / applicationId / namespace | `com.foshlabs.kmpapp` | ~140 `.kt`/`.kts`/`.xml`/`.sq` files + 6 source dirs |
 | Android app name | `KMP App` | `composeApp/src/androidMain/res/values/strings.xml` |
-| iOS bundle id | `com.jetbrains.kmpapp.KMP-App-Template-Native` *(stale — different root)* | `iosApp/Configuration/Config.xcconfig` |
+| iOS bundle id | `com.foshlabs.kmpapp` *(matches the Android root)* | `iosApp/Configuration/Config.xcconfig` |
 | iOS app name | `KMP App` | `iosApp/Configuration/Config.xcconfig` |
 
 iOS reads `BUNDLE_ID`, `APP_NAME`, `TEAM_ID` from `Config.xcconfig` via `${…}` in the
@@ -112,8 +112,8 @@ This also fixes `applicationId`/`namespace` in `composeApp/build.gradle.kts`, th
 
 In `iosApp/Configuration/Config.xcconfig`:
 
-- `BUNDLE_ID=com.jetbrains.kmpapp.KMP-App-Template-Native` → `BUNDLE_ID=$NEW_PKG`
-  (identical to the Android `applicationId`; this also drops the stale `jetbrains` root).
+- Set `BUNDLE_ID=$NEW_PKG` — identical to the Android `applicationId` (the template
+  starts it at `com.foshlabs.kmpapp`; just overwrite whatever value is there).
 - `TEAM_ID=` → the Apple Team ID, if provided.
 
 ## Step 5 — Optional cleanup (only if asked)
@@ -129,10 +129,10 @@ In `iosApp/Configuration/Config.xcconfig`:
 ## Step 6 — Verify
 
 ```bash
-# No stray template identifiers should remain (org.jetbrains.kotlin plugin imports are fine).
-grep -rn --exclude-dir={build,.git,.gradle,.kotlin,.idea} \
-  -e "com.foshlabs.kmpapp" -e "com.jetbrains.kmpapp" \
-  -e "KMP-App-Template-Native" . || echo "clean"
+# No stray template identifiers should remain in source. (The vendored skill copies under
+# .claude/ and .cursor/ are managed by the skills sync — exclude them.)
+grep -rn --exclude-dir={build,.git,.gradle,.kotlin,.idea,.claude,.cursor} \
+  -e "com.foshlabs.kmpapp" -e "KMP-App-Template-Native" . || echo "clean"
 
 ./gradlew :composeApp:assembleDebug          # Android builds with the new id
 ```
