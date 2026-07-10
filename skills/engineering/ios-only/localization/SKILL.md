@@ -13,7 +13,7 @@ this approach — they author one canonical JSON with codegen; see the `localiza
 ## Architecture
 
 ### 1. Kotlin String Objects (Shared Module)
-Located in `shared/src/commonMain/kotlin/com/foshlabs/tally_counter/features/*/presentation/`
+Located in `shared/src/commonMain/kotlin/.../features/*/presentation/`
 
 These objects define localization keys as Kotlin functions that return string identifiers:
 

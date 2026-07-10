@@ -13,14 +13,16 @@ This checklist guides you through creating a new feature/scene in the Kotlin Mul
 Before starting, decide on:
 - **Feature name**: Use snake_case (e.g., `result`, `practice_session`)
 - **Feature display name**: PascalCase for classes (e.g., `Result`, `PracticeSession`)
-- **Package path**: `com.jetbrains.kmpapp.features.{feature_name}`
+- **Package path**: `{package}.features.{feature_name}` — `{package}` is a placeholder
+  for **the project's own root package**; read it from any existing source file and use
+  it verbatim (never a hardcoded vendor package).
 
 ## ✅ Step-by-Step Checklist
 
 ### 1. Shared Module (commonMain) - Core Feature Files
 
 #### 1.1 Create Feature Directory Structure
-- [ ] Create directory: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/{feature_name}/`
+- [ ] Create directory: `shared/src/commonMain/kotlin/.../features/{feature_name}/`
 - [ ] Create subdirectories:
   - [ ] `di/` - Dependency injection module
   - [ ] `domain/` - Use cases
@@ -38,9 +40,9 @@ Before starting, decide on:
 
 **Template (no navigation):**
 ```kotlin
-package com.jetbrains.kmpapp.features.{feature_name}.presentation
+package {package}.features.{feature_name}.presentation
 
-import com.jetbrains.kmpapp.features.{feature_name}.domain.{FeatureName}UseCase
+import {package}.features.{feature_name}.domain.{FeatureName}UseCase
 import io.github.foshlabs.kmp.architecturekit.BaseViewModel
 import io.github.foshlabs.kmp.architecturekit.ViewModelState
 import com.rickclephas.kmp.observableviewmodel.launch
@@ -88,7 +90,7 @@ class {FeatureName}ViewModel(
 
 **Template:**
 ```kotlin
-package com.jetbrains.kmpapp.features.{feature_name}.presentation
+package {package}.features.{feature_name}.presentation
 
 object {FeatureName}Strings {
 
@@ -111,7 +113,7 @@ object {FeatureName}Strings {
 
 **Template:**
 ```kotlin
-package com.jetbrains.kmpapp.features.{feature_name}.domain
+package {package}.features.{feature_name}.domain
 
 import io.github.foshlabs.kmp.architecturekit.UnitSuspendUseCase
 
@@ -134,7 +136,7 @@ sealed class {FeatureName}UseCaseImpl: {FeatureName}UseCase {
 
 **Template:**
 ```kotlin
-package com.jetbrains.kmpapp.features.{feature_name}.data
+package {package}.features.{feature_name}.data
 
 interface {FeatureName}Repository {
     // TODO: Add repository methods here
@@ -160,13 +162,13 @@ class {FeatureName}RepositoryImpl: {FeatureName}Repository {
 
 **Template:**
 ```kotlin
-package com.jetbrains.kmpapp.features.{feature_name}.di
+package {package}.features.{feature_name}.di
 
-import com.jetbrains.kmpapp.features.{feature_name}.data.{FeatureName}Repository
-import com.jetbrains.kmpapp.features.{feature_name}.data.{FeatureName}RepositoryImpl
-import com.jetbrains.kmpapp.features.{feature_name}.domain.{FeatureName}UseCase
-import com.jetbrains.kmpapp.features.{feature_name}.domain.{FeatureName}UseCaseImpl
-import com.jetbrains.kmpapp.features.{feature_name}.presentation.{FeatureName}ViewModel
+import {package}.features.{feature_name}.data.{FeatureName}Repository
+import {package}.features.{feature_name}.data.{FeatureName}RepositoryImpl
+import {package}.features.{feature_name}.domain.{FeatureName}UseCase
+import {package}.features.{feature_name}.domain.{FeatureName}UseCaseImpl
+import {package}.features.{feature_name}.presentation.{FeatureName}ViewModel
 import org.koin.dsl.module
 
 val {featureName}Module = module {
@@ -186,18 +188,18 @@ val {featureName}Module = module {
 ```
 
 #### 1.7 Register Feature Module
-- [ ] Open `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/featureModule.kt`
-- [ ] Add import: `import com.jetbrains.kmpapp.features.{feature_name}.di.{featureName}Module`
+- [ ] Open `shared/src/commonMain/kotlin/.../features/featureModule.kt`
+- [ ] Add import: `import {package}.features.{feature_name}.di.{featureName}Module`
 - [ ] Add module to list: `{featureName}Module,`
 
 ### 2. TemplateAppScene Integration
 
 #### 2.1 Add TemplateAppScene to Shared Module
-- [ ] Open `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/application/TemplateAppScene.kt`
+- [ ] Open `shared/src/commonMain/kotlin/.../application/TemplateAppScene.kt`
 - [ ] Add: `data object {FeatureName}: TemplateAppScene`
 
 #### 2.2 Add TemplateAppScene to Android Navigation
-- [ ] Open `composeApp/src/androidMain/kotlin/com/jetbrains/kmpapp/library/navigation/mapToDestination.kt`
+- [ ] Open `composeApp/src/androidMain/kotlin/.../library/navigation/mapToDestination.kt`
 - [ ] Add case to `when` expression: `TemplateAppScene.{FeatureName} -> {FeatureName}`
 - [ ] Add serializable object: `@Serializable object {FeatureName}`
 
@@ -265,14 +267,14 @@ private struct Content: View {
 ```
 
 #### 3.2 Register ViewModel in KoinDependencies
-- [ ] Open `shared/src/iosMain/kotlin/com/jetbrains/kmpapp/di/KoinDependencies.kt`
-- [ ] Add import: `import com.jetbrains.kmpapp.features.{feature_name}.presentation.{FeatureName}ViewModel`
+- [ ] Open `shared/src/iosMain/kotlin/.../di/KoinDependencies.kt`
+- [ ] Add import: `import {package}.features.{feature_name}.presentation.{FeatureName}ViewModel`
 - [ ] Add property: `val {featureName}ViewModel: {FeatureName}ViewModel by inject()`
 
 ### 4. Android Implementation (Optional - if needed)
 
 #### 4.1 Create Android Composable
-- [ ] Create directory: `composeApp/src/androidMain/kotlin/com/jetbrains/kmpapp/features/{feature_name}/`
+- [ ] Create directory: `composeApp/src/androidMain/kotlin/.../features/{feature_name}/`
 - [ ] Create `{FeatureName}Screen.kt` composable
 - [ ] Inject ViewModel using Koin
 - [ ] Implement UI using Jetpack Compose
@@ -304,26 +306,26 @@ private struct Content: View {
 | State | `State` (nested) | `ResultViewModel.State` |
 | Action methods | `on{ActionName}()` | `onTapContinue()`, `onSelectItem()` |
 | iOS View | `{FeatureName}View` | `ResultView` |
-| Package | `com.jetbrains.kmpapp.features.{feature_name}` | `com.jetbrains.kmpapp.features.result` |
+| Package | `{package}.features.{feature_name}` | `{package}.features.result` |
 
 ## 🔍 Quick Reference: File Locations
 
 ### Shared Module
-- ViewModel: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/{feature_name}/presentation/{FeatureName}ViewModel.kt`
-- UseCase: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/{feature_name}/domain/{FeatureName}UseCase.kt`
-- Repository: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/{feature_name}/data/{FeatureName}Repository.kt`
-- DI Module: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/{feature_name}/di/{featureName}Module.kt`
-- Feature Modules: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/features/featureModule.kt`
-- TemplateAppScene: `shared/src/commonMain/kotlin/com/jetbrains/kmpapp/application/TemplateAppScene.kt`
+- ViewModel: `shared/src/commonMain/kotlin/.../features/{feature_name}/presentation/{FeatureName}ViewModel.kt`
+- UseCase: `shared/src/commonMain/kotlin/.../features/{feature_name}/domain/{FeatureName}UseCase.kt`
+- Repository: `shared/src/commonMain/kotlin/.../features/{feature_name}/data/{FeatureName}Repository.kt`
+- DI Module: `shared/src/commonMain/kotlin/.../features/{feature_name}/di/{featureName}Module.kt`
+- Feature Modules: `shared/src/commonMain/kotlin/.../features/featureModule.kt`
+- TemplateAppScene: `shared/src/commonMain/kotlin/.../application/TemplateAppScene.kt`
 - Analytics: (optional) add to your analytics mapping if used
 
 ### iOS
 - View: `iosApp/iosApp/Features/{FeatureName}/{FeatureName}View.swift`
 - TemplateAppScene / AppScene: `iosApp/iosApp/App/AppScene.swift`, `AppScene+Convertible.swift`, `AppScene+Factory.swift`
-- KoinDependencies: `shared/src/iosMain/kotlin/com/jetbrains/kmpapp/KoinDependencies.kt`
+- KoinDependencies: `shared/src/iosMain/kotlin/.../KoinDependencies.kt`
 
 ### Android
-- Navigation: `composeApp/src/androidMain/kotlin/com/jetbrains/kmpapp/library/navigation/mapToDestination.kt`
+- Navigation: `composeApp/src/androidMain/kotlin/.../library/navigation/mapToDestination.kt`
 
 ## 💡 Tips
 

@@ -47,7 +47,9 @@ features/feature_name/
 ```
 
 ### Package Naming
-- Use reverse domain notation: `com.jetbrains.kmpapp`
+- **Always use the project's own root package** (reverse-domain notation) — read it
+  from any existing source file; never hardcode a vendor package. Throughout these
+  skills `{package}` stands in for that actual root.
 - Feature packages should use snake_case (e.g., `select_country`)
 - Class names should use PascalCase
 

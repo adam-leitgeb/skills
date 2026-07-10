@@ -55,4 +55,4 @@ Each feature may have `domain/`, `presentation/`, and `data/` subfolders. Only c
 
 ## Package Naming
 
-Test packages must match the source package exactly. A test for `com.jetbrains.kmpapp.features.login.domain.LoginUseCase` lives in package `com.jetbrains.kmpapp.features.login.domain` with file `LoginUseCaseTest.kt`.
+Test packages must match the source package exactly. A test for `{package}.features.login.domain.LoginUseCase` lives in package `{package}.features.login.domain` with file `LoginUseCaseTest.kt`. (`{package}` is a placeholder — use the project's own root package, read from any existing source file, never a hardcoded vendor package.)
