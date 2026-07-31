@@ -12,8 +12,8 @@ Strings are authored **once** in a canonical JSON and consumed by **both** Andro
 No third-party localization library, no native resource bundles (`.xcstrings` / Android
 `strings.xml`).
 
-The contributor-facing companion to this skill is `docs/localization.md` — keep the two in
-sync (this is the condensed agent-facing mirror).
+Where the project keeps a contributor-facing `docs/localization.md`, this is its condensed
+agent-facing mirror — keep the two in sync.
 
 ## How it fits together
 
@@ -21,11 +21,11 @@ sync (this is the condensed agent-facing mirror).
 shared/src/commonMain/resources/localization.json   ← author strings here (one file)
         │
         ├─ build: generateLocalization (Gradle)  → build/generated/localization/**/XxxStrings.kt
-        │     object OnboardingStrings { fun title(): String = Localizer.localise("onboarding.title") }
+        │     object ProfileStrings { fun title(): String = Localizer.localise("profile.title") }
         │
         └─ runtime: FileLoader.loadFile("localization.json")
               → LocalizationLoader (active language + base fallback) → Localizer.load(map)
-              → OnboardingStrings.title() → Localizer.localise(...) → plain String
+              → ProfileStrings.title() → Localizer.localise(...) → plain String
 ```
 
 - **Canonical source:** `shared/src/commonMain/resources/localization.json`. It fans out
@@ -39,7 +39,7 @@ shared/src/commonMain/resources/localization.json   ← author strings here (one
 - **Runtime:** `library/localization/` holds `Localizer` (the `object` generated code
   calls), `LocalizationLoader`, `LocalizationCoordinator`, `LanguageController`,
   `LocalizationDto`, and `PluralRules` (the CLDR plural-category selector). The map is
-  loaded once at startup in `InitialViewModel` **before** the first string-rendering screen.
+  loaded once at app startup, **before** the first string-rendering screen.
 
 ## JSON format
 
@@ -54,14 +54,14 @@ test enforces this).
 
 ```json
 {
-  "onboarding.title":              { "en": "Welcome",    "de": "Willkommen" },
-  "onboarding.get_started_button": { "en": "Get Started","de": "Loslegen" },
-  "notes.list.add_button":         { "en": "Add note" },
+  "profile.title":          { "en": "Your profile", "de": "Dein Profil" },
+  "profile.save_button":    { "en": "Save",         "de": "Speichern" },
+  "profile.list.add_button":{ "en": "Add item" },
 
-  "notes.count": {
-    "en": { "one": "%1$d note",    "other": "%1$d notes" },
-    "de": { "one": "%1$d Notiz",   "other": "%1$d Notizen" },
-    "pl": { "one": "%1$d notatka", "few": "%1$d notatki", "many": "%1$d notatek" }
+  "profile.count": {
+    "en": { "one": "%1$d item",    "other": "%1$d items" },
+    "de": { "one": "%1$d Eintrag", "other": "%1$d Einträge" },
+    "pl": { "one": "%1$d pozycja", "few": "%1$d pozycje", "many": "%1$d pozycji" }
   }
 }
 ```
@@ -78,21 +78,21 @@ segments use snake_case.
   **namespace registry** (`localizationNamespaces` in `shared/build.gradle.kts`). Both
   vary per namespace, so the registry is required. Add an entry for any new namespace.
 - **Remaining segments → function name**, lowerCamelCase: every `.`/`_` boundary becomes
-  a camelCase hump (`notes.list.add_button` → `listAddButton`).
+  a camelCase hump (`profile.list.add_button` → `listAddButton`).
 - **Placeholders** use positional `%1$s` (→ `String` param) / `%1$d` (→ `Int` param) in
   the base value, ordered by index (`arg0, arg1, …`). `%%` is a literal percent.
   Substitution is plain text replacement, **not** locale-aware number formatting.
 - **Build fails** on a leading-digit segment, a name collision within an object, or a
   Kotlin keyword as a function name.
 
-Current namespace registry: `onboarding`, `notes`, `tab_bar` → feature
-`…presentation`; `api_environment` → `…library.networking`; `co_empty_state`,
-`co_error_state` → `…library.design` (object names `COEmptyStateStrings` /
-`COErrorStateStrings` — registry overrides).
+A registry entry maps a namespace to its **target package** and **object name**. Most
+namespaces are features (`…features.<name>.presentation`), but library namespaces point
+at their own package, and the object name can be overridden where the derived name
+wouldn't match the project's naming (e.g. a design-system prefix). Read the current
+entries from `localizationNamespaces` in `shared/build.gradle.kts` — don't assume.
 
-Dispatch logic (e.g. `Tab.title()` choosing between `TabBarStrings.notes()` and
-`.settings()`) is **not** a string — keep it out of the generated object (it lives on
-`Tab`).
+Dispatch logic — a `title()` that picks between two generated accessors — is **not** a
+string. Keep it out of the generated object; it belongs on the type doing the choosing.
 
 ### Plurals (the codegen contract for plural keys)
 
@@ -100,7 +100,7 @@ Dispatch logic (e.g. `Tab.title()` choosing between `TabBarStrings.notes()` and
   substitution arg 1. Codegen **fails the build** if a plural key's leading placeholder
   isn't `%1$d`.
 - Codegen emits a count-taking function calling `localisePlural`:
-  `notes.count` → `fun count(arg0: Int): String = Localizer.localisePlural("notes.count", arg0, arg0.toString())`.
+  `profile.count` → `fun count(arg0: Int): String = Localizer.localisePlural("profile.count", arg0, arg0.toString())`.
   Additional placeholders (`%2$s`, …) become extra params after `arg0`.
 - Placeholders must be **consistent across all categories** of a language; codegen parses
   the param list from the base `other` template (always present).
@@ -110,8 +110,8 @@ Dispatch logic (e.g. `Tab.title()` choosing between `TabBarStrings.notes()` and
 ## Adding a new string
 
 1. Add the key (+ at least the `en` value) to `localization.json`.
-2. Reference the generated accessor at the call site, e.g. `OnboardingStrings.title()`
-   (Kotlin) / `OnboardingStrings().title()` (Swift). Run a Gradle sync / build so codegen
+2. Reference the generated accessor at the call site, e.g. `ProfileStrings.title()`
+   (Kotlin) / `ProfileStrings().title()` (Swift). Run a Gradle sync / build so codegen
    regenerates.
 
 **Plural string:** author the value as a category map (`{ "one": …, "other": … }`) with
@@ -144,15 +144,14 @@ UI ships yet).
 ## Rules
 
 - **`State` fields stay plain `String`.** Never resolve a generated string into a stored
-  `val` with an `XxxStrings` default — `val title: String = OnboardingStrings.title()` runs
+  `val` with an `XxxStrings` default — `val title: String = ProfileStrings.title()` runs
   at `State()` construction (in previews and the `NavigationViewModel<State>(State())`
   bootstrap), **before** the map is loaded, and returns the raw key.
-- **Prefer a lazy computed getter on `State`:** `val title: String get() = OnboardingStrings.title()`.
+- **Prefer a lazy computed getter on `State`:** `val title: String get() = ProfileStrings.title()`.
   It resolves at *access* (after load) and re-resolves on a language change. The field is
-  still a plain `String` to callers; only resolution is deferred. (Reference:
-  `ApiEnvironment.title` in `library/networking`.) Resolving once in the VM body via
-  `state = state.copy(title = …)` also works but snapshots the value and goes stale on a
-  mid-session language switch — prefer the getter.
+  still a plain `String` to callers; only resolution is deferred. Resolving once in the VM
+  body via `state = state.copy(title = …)` also works but snapshots the value and goes
+  stale on a mid-session language switch — prefer the getter.
 - Plural categories are likewise resolved at runtime by the active language — same
   load-ordering caveat as singular strings.
 - **Previews pass literal strings**, never call `XxxStrings.*` (the map isn't loaded in the

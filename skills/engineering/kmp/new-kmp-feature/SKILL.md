@@ -38,7 +38,7 @@ Before starting, decide on:
 - [ ] Create subdirectories:
   - [ ] `di/` - Dependency injection module
   - [ ] `domain/` - Use cases
-  - [ ] `presentation/` - ViewModels and strings
+  - [ ] `presentation/` - ViewModels, state models, preview factories
   - [ ] `data/` - Repository
   - [ ] `model/` - Feature-specific models (if needed)
 
