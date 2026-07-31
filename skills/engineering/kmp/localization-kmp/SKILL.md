@@ -143,23 +143,29 @@ UI ships yet).
 
 ## Rules
 
-- **`State` fields stay plain `String`.** Never resolve a generated string into a stored
-  `val` with an `XxxStrings` default — `val title: String = ProfileStrings.title()` runs
-  at `State()` construction (in previews and the `NavigationViewModel<State>(State())`
-  bootstrap), **before** the map is loaded, and returns the raw key.
-- **Prefer a lazy computed getter on `State`:** `val title: String get() = ProfileStrings.title()`.
-  It resolves at *access* (after load) and re-resolves on a language change. The field is
-  still a plain `String` to callers; only resolution is deferred. Resolving once in the VM
-  body via `state = state.copy(title = …)` also works but snapshots the value and goes
-  stale on a mid-session language switch — prefer the getter.
+- **`State` fields stay plain `String`** — resolve the generated accessor into the field;
+  never expose an `XxxStrings` type to the UI.
+- **Anything a preview renders is a stored field with a localized default:**
+  `val title: String = ProfileStrings.title()`. A `+Preview` factory can then override it
+  with a literal, which is the only way a preview shows real copy — the map is never
+  loaded in a preview process, so a string resolved anywhere a factory can't reach comes
+  out as the raw key.
+- **A computed getter is for fields previews never read:**
+  `val title: String get() = ProfileStrings.title()` resolves at *access* rather than at
+  `State()` construction and re-resolves on a language change — but it cannot be
+  overridden, so anything a preview displays must not use one. The same applies to strings
+  resolved inside a **derived** sub-state getter: they are unreachable by a preview factory
+  for exactly the same reason.
+- **Load-ordering caveat for stored defaults**: they resolve when `State()` is constructed.
+  That is after the map loads for a ViewModel built when its screen appears, but not for
+  state constructed during startup — if a raw key shows at runtime, check that ordering
+  before reaching for a getter.
 - Plural categories are likewise resolved at runtime by the active language — same
   load-ordering caveat as singular strings.
-- **Previews pass literal strings**, never call `XxxStrings.*` (the map isn't loaded in the
-  preview process). A computed-getter field can't be overridden with a literal, so it
-  renders the raw key in a preview — for fields a preview must render, keep them plain
-  stored fields set in the VM body and pass a literal; use the getter for fields previews
-  don't read.
 - Never hardcode user-facing English in `*.kt` / `*.swift` — author it in the JSON.
+
+`kmp-viewmodel-state` states the same rule from the state-shape side ("don't derive
+copy"). Keep the two in agreement.
 
 ## Testing
 

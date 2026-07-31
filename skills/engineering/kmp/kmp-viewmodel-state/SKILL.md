@@ -161,10 +161,27 @@ defaults:
 val title: String = FeatureStrings.title(),
 ```
 
-The localization facade returns the key itself when the string map isn't loaded,
-and it is never loaded in a preview — so text resolved inside a computed getter
-renders as a raw key in every Compose/SwiftUI preview. Stored fields let `+Preview`
-helpers pass literals (see `state-model-preview-helpers`).
+The localization facade returns the key itself when the string map isn't loaded, and
+it is never loaded in a preview — so text resolved inside a computed getter renders as
+a raw key in every Compose/SwiftUI preview. Stored fields let `+Preview` helpers pass
+literals (see `state-model-preview-helpers`).
+
+This applies to **derived sub-states too**: a string resolved inside the
+`phoneNumberRow`-style getter above is just as unreachable by a preview factory. Store
+the copy on `State` and pass it into the derived value:
+
+```kotlin
+data class State(
+    val submitTitle: String = FeatureStrings.submit(),   // preview can override
+    val status: SubmitStatus = SubmitStatus.Idle,        // preview can vary
+) : ViewModelState {
+    val submitButton: ButtonState
+        get() = ButtonState(title = submitTitle, isLoading = status is SubmitStatus.Submitting, …)
+}
+```
+
+A computed getter resolving copy is correct only for fields no preview renders — see
+`localization-kmp` for the load-ordering side of the same rule.
 
 **Avoid rebuild helpers with defaulted parameters.** A
 `private fun row(errorMessage: String? = null)` that re-creates a sub-state silently
