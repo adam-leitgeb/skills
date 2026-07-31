@@ -1,18 +1,30 @@
 ---
-name: feature-creation-checklist
-description: Step-by-step checklist for adding a new feature module to a KMP project (shared ViewModel, Android Compose, iOS SwiftUI). Use when creating a new feature or screen.
+name: new-kmp-feature
+description: Step-by-step checklist for adding a new feature module to a KMP project (shared ViewModel, Android Compose, iOS SwiftUI) — the files to create and the registrations that are easy to forget. Use when creating a new feature or screen.
 user-invocable: false
 ---
 
-# Feature Creation Checklist
+# New KMP Feature
 
 This checklist guides you through creating a new feature/scene in the Kotlin Multiplatform project. Follow these steps in order to ensure all required files and integrations are created.
+
+It covers **what to create and where to register it**. What goes *inside* each piece
+lives in its own skill, so each rule has one home:
+
+| Topic | Skill |
+|---|---|
+| Layers, naming, DI, package structure | `kotlin-multiplatform-architecture` |
+| State shape, status modelling, error handling | `kmp-viewmodel-state` |
+| Localized strings | `localization-kmp` |
+| `+Preview` state factories | `state-model-preview-helpers` |
+| SwiftUI view structure | `ios-swiftui-patterns` |
+| Unit tests | `android-unittest-structure` |
 
 ## 📋 Prerequisites
 
 Before starting, decide on:
-- **Feature name**: Use snake_case (e.g., `result`, `practice_session`)
-- **Feature display name**: PascalCase for classes (e.g., `Result`, `PracticeSession`)
+- **Feature name**: Use snake_case (e.g., `profile`, `payment_method`)
+- **Feature display name**: PascalCase for classes (e.g., `Profile`, `PaymentMethod`)
 - **Package path**: `{package}.features.{feature_name}` — `{package}` is a placeholder
   for **the project's own root package**; read it from any existing source file and use
   it verbatim (never a hardcoded vendor package).
@@ -26,84 +38,34 @@ Before starting, decide on:
 - [ ] Create subdirectories:
   - [ ] `di/` - Dependency injection module
   - [ ] `domain/` - Use cases
-  - [ ] `presentation/` - ViewModels and strings
+  - [ ] `presentation/` - ViewModels, state models, preview factories
   - [ ] `data/` - Repository
   - [ ] `model/` - Feature-specific models (if needed)
 
 #### 1.2 Create ViewModel
 - [ ] Create `presentation/{FeatureName}ViewModel.kt`
   - [ ] Extend `BaseViewModel<State>` if the screen does not navigate; extend `NavigationViewModel<State>` if it uses `navigate()` / `NavigationState`
-  - [ ] Add nested `data class State : ViewModelState`
-  - [ ] Add MARK comments: Properties, Initialization, Actions, Helpers
-  - [ ] Implement `onAppear()` method
-  - [ ] Add required action methods (e.g., `onTapContinue()`, `onSelectItem()`)
+  - [ ] Add nested `State : ViewModelState`
+  - [ ] Implement `onAppear()` and the screen's `onXxx()` actions
 
-**Template (no navigation):**
-```kotlin
-package {package}.features.{feature_name}.presentation
+> **Shape of `State` — sealed renderings vs a status field, deriving UI state
+> instead of storing flags, stale results, where errors live — is
+> `kmp-viewmodel-state`. Read it before writing the State.** In short: sealed
+> variants for conditions where the content isn't on screen (loading, error,
+> empty), a status field for operations that run while it is (submitting), one
+> status instead of several booleans, and everything the UI renders derived
+> from it.
 
-import {package}.features.{feature_name}.domain.{FeatureName}UseCase
-import io.github.foshlabs.kmp.architecturekit.BaseViewModel
-import io.github.foshlabs.kmp.architecturekit.ViewModelState
-import com.rickclephas.kmp.observableviewmodel.launch
+- [ ] Add `presentation/{FeatureName}State+Preview.kt` factories (`state-model-preview-helpers`)
 
-class {FeatureName}ViewModel(
-    // TODO: Add use cases here
-): BaseViewModel<{FeatureName}ViewModel.State>(State()) {
+#### 1.3 Add Localized Strings
+- [ ] Add the feature's keys to the project's `localization.json` and use the
+      generated `{FeatureName}Strings` facade — see `localization-kmp` for the
+      key naming, plurals and codegen wiring.
 
-    // MARK: - Properties
-
-    data class State(
-        // TODO: Add state properties
-    ): ViewModelState
-
-    // MARK: - Initialization
-
-    init {
-        setupObservers()
-    }
-
-    private fun setupObservers() {
-        // TODO: Setup observers if needed
-    }
-
-    // MARK: - Actions
-
-    fun onAppear() {
-        // TODO: Load data when view appears
-    }
-
-    // MARK: - Helpers
-
-    private fun loadData() {
-        viewModelScope.launch {
-            // TODO: Load data using use cases
-        }
-    }
-}
-```
-
-#### 1.3 Create Strings File
-- [ ] Create `presentation/{FeatureName}Strings.kt`
-  - [ ] Add `object {FeatureName}Strings`
-  - [ ] Add nested objects for different string categories (e.g., `PrimaryButton`, `Errors`)
-
-**Template:**
-```kotlin
-package {package}.features.{feature_name}.presentation
-
-object {FeatureName}Strings {
-
-    object PrimaryButton {
-        fun defaultPrimaryButtonText(): String = "CONTINUE"
-    }
-
-    object Errors {
-        fun title(): String = "Error"
-        fun message(): String = "An error occurred"
-    }
-}
-```
+> Older projects hand-wrote a `{FeatureName}Strings.kt` object with literal
+> strings. That is legacy — new features always go through the JSON source and
+> codegen.
 
 #### 1.4 Create UseCase Interface and Implementation
 - [ ] Create `domain/{FeatureName}UseCase.kt`
@@ -194,8 +156,12 @@ val {featureName}Module = module {
 
 ### 2. TemplateAppScene Integration
 
+> The scene **type** is `TemplateAppScene` (Kotlin sealed interface, Swift enum),
+> but it lives in a file called `AppScene.kt` / `AppScene.swift`. Check the actual
+> names in the project before creating anything.
+
 #### 2.1 Add TemplateAppScene to Shared Module
-- [ ] Open `shared/src/commonMain/kotlin/.../application/TemplateAppScene.kt`
+- [ ] Open `shared/src/commonMain/kotlin/.../application/AppScene.kt`
 - [ ] Add: `data object {FeatureName}: TemplateAppScene`
 
 #### 2.2 Add TemplateAppScene to Android Navigation
@@ -204,16 +170,16 @@ val {featureName}Module = module {
 - [ ] Add serializable object: `@Serializable object {FeatureName}`
 
 #### 2.3 Add TemplateAppScene to iOS Navigation
-- [ ] Open `iosApp/iosApp/App/TemplateAppScene.swift`
+- [ ] Open `iosApp/iosApp/App/AppScene.swift`
   - [ ] Add case: `case {featureName}`
-- [ ] Open `iosApp/iosApp/App/TemplateAppScene+Convertible.swift`
+- [ ] Open `iosApp/iosApp/App/AppScene+Convertible.swift`
   - [ ] Add case: `case is TemplateAppScene{FeatureName}: return .{featureName}`
-- [ ] Open `iosApp/iosApp/App/TemplateAppScene+Factory.swift`
+- [ ] Open `iosApp/iosApp/App/AppScene+Factory.swift`
   - [ ] Add case: `case .{featureName}: {FeatureName}View()`
 
 #### 2.4 Add Analytics Key (optional – if your project has analytics)
 - [ ] If using analytics, add case to your scene analytics mapping: `TemplateAppScene.{FeatureName} -> "{feature_name}"`
-  - [ ] Use snake_case for the analytics screen ID (e.g., `change_country`, `practice_session`)
+  - [ ] Use snake_case for the analytics screen ID (e.g., `profile`, `payment_method`)
 
 ### 3. iOS Implementation
 
@@ -267,7 +233,7 @@ private struct Content: View {
 ```
 
 #### 3.2 Register ViewModel in KoinDependencies
-- [ ] Open `shared/src/iosMain/kotlin/.../di/KoinDependencies.kt`
+- [ ] Open `shared/src/iosMain/kotlin/.../KoinDependencies.kt`
 - [ ] Add import: `import {package}.features.{feature_name}.presentation.{FeatureName}ViewModel`
 - [ ] Add property: `val {featureName}ViewModel: {FeatureName}ViewModel by inject()`
 
@@ -291,22 +257,23 @@ private struct Content: View {
 - [ ] Analytics key added (if project uses analytics)
 - [ ] iOS ViewModel registered in `KoinDependencies`
 - [ ] iOS View follows the standard pattern
+- [ ] Strings come from `localization.json`, not literals
 - [ ] All TODO comments addressed or documented
 
 ## 📝 Naming Conventions Reference
 
 | Type | Convention | Example |
 |------|-----------|---------|
-| Feature directory | snake_case | `result`, `practice_session` |
-| Feature class names | PascalCase | `Result`, `PracticeSession` |
-| ViewModel | `{FeatureName}ViewModel` | `ResultViewModel` |
-| UseCase | `{FeatureName}UseCase` | `ResultUseCase` |
-| Repository | `{FeatureName}Repository` | `ResultRepository` |
-| DI Module | `{featureName}Module` | `resultModule` |
-| State | `State` (nested) | `ResultViewModel.State` |
+| Feature directory | snake_case | `profile`, `payment_method` |
+| Feature class names | PascalCase | `Profile`, `PaymentMethod` |
+| ViewModel | `{FeatureName}ViewModel` | `ProfileViewModel` |
+| UseCase | `{FeatureName}UseCase` | `ProfileUseCase` |
+| Repository | `{FeatureName}Repository` | `ProfileRepository` |
+| DI Module | `{featureName}Module` | `profileModule` |
+| State | `State` (nested) | `ProfileViewModel.State` |
 | Action methods | `on{ActionName}()` | `onTapContinue()`, `onSelectItem()` |
-| iOS View | `{FeatureName}View` | `ResultView` |
-| Package | `{package}.features.{feature_name}` | `{package}.features.result` |
+| iOS View | `{FeatureName}View` | `ProfileView` |
+| Package | `{package}.features.{feature_name}` | `{package}.features.profile` |
 
 ## 🔍 Quick Reference: File Locations
 
@@ -316,7 +283,7 @@ private struct Content: View {
 - Repository: `shared/src/commonMain/kotlin/.../features/{feature_name}/data/{FeatureName}Repository.kt`
 - DI Module: `shared/src/commonMain/kotlin/.../features/{feature_name}/di/{featureName}Module.kt`
 - Feature Modules: `shared/src/commonMain/kotlin/.../features/featureModule.kt`
-- TemplateAppScene: `shared/src/commonMain/kotlin/.../application/TemplateAppScene.kt`
+- Scenes: `shared/src/commonMain/kotlin/.../application/AppScene.kt`
 - Analytics: (optional) add to your analytics mapping if used
 
 ### iOS
@@ -330,12 +297,10 @@ private struct Content: View {
 ## 💡 Tips
 
 1. **Start with the skeleton**: Create all files with TODO comments first, then implement
-2. **Follow existing patterns**: Look at similar features (e.g., `practice_session`, `onboarding`) for reference
+2. **Follow existing patterns**: Look at a recent feature in *this* project for reference — older ones may predate current conventions
 3. **Test incrementally**: After each major step, verify compilation
-4. **Use MARK comments**: Keep code organized with MARK sections
-5. **State is immutable**: Always use `state.copy(...)` for updates
-6. **Error handling**: Use cases should handle errors internally, return `DomainResult` or empty values
-7. **Navigation**: For screens that navigate, use `NavigationViewModel` and `navigate(NavigationState)`; use `HandleNavigation(viewModel, navController)` in the UI. For screens that do not navigate, use `BaseViewModel` and do not call `HandleNavigation`.
+4. **Navigation**: For screens that navigate, use `NavigationViewModel` and `navigate(NavigationState)`; use `HandleNavigation(viewModel, navController)` in the UI. For screens that do not navigate, use `BaseViewModel` and do not call `HandleNavigation`.
+5. **Errors**: a use case's failure modes are a sealed taxonomy in the feature's `domain/`, carrying data only; the error→copy mapping is a named extension in `presentation/` — see `kmp-viewmodel-state`
 
 ## 🚨 Common Mistakes to Avoid
 
@@ -344,7 +309,7 @@ private struct Content: View {
 - ❌ Forgetting to add analytics key (if project uses analytics)
 - ❌ Not registering ViewModel in `KoinDependencies` for iOS
 - ❌ Forgetting to create the Repository and register it in the DI module
-- ❌ Using mutable state instead of `state.copy(...)`
 - ❌ ViewModels calling repositories directly (must use UseCases)
 - ❌ Missing required modifiers in iOS View (`.onAppear`, `.handleNavigation`)
 - ❌ Wrong package naming (should use snake_case for feature names)
+- ❌ Hand-writing a `{FeatureName}Strings.kt` with literal strings instead of adding keys to `localization.json`
