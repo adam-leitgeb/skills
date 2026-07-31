@@ -9,7 +9,7 @@ user-invocable: false
 Every presentation **State model** — the immutable `data class`es that back a SwiftUI/Compose view (`*State`, `*Model`, row/tile/header states, etc.) — gets a pair of preview helper factories so previews never have to hand-build sample state:
 
 - `previewSingle()` → one representative instance
-- `previewList()` → a `List` of varied instances (different field values, edge cases, long text, empty collections)
+- `previewList()` → a `List` of varied instances (different field values, edge cases, long text, empty collections) — for list-rendered models only, see hard rule 4
 
 These are consumed by SwiftUI `#Preview` blocks and Compose `@Preview` functions, on both platforms, from the shared module.
 
@@ -26,7 +26,7 @@ These are consumed by SwiftUI `#Preview` blocks and Compose `@Preview` functions
 
 3. **`companion object` must exist on the model.** The helpers are extensions on the model's companion (`fun ResultTileState.Companion.previewSingle()`), so the model needs a `companion object` declared. If the model has no companion members, an empty `companion object` is enough.
 
-4. **Always create both** `previewSingle()` and `previewList()` when you create a State model. Add extra named variants as the UI needs them.
+4. **Create both** `previewSingle()` and `previewList()` for models the UI renders as a collection — row, tile, item states. A whole-screen ViewModel `State` is never rendered as a list: give it `previewSingle()` plus a named zero-arg variant per screen mode (`previewSending()`, `previewError()`, …) and skip `previewList()`. Add extra named variants as the UI needs them.
 
 ## File template
 

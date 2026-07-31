@@ -53,6 +53,17 @@ Each feature may have `domain/`, `presentation/`, and `data/` subfolders. Only c
 | `data/repository/CurrentUserRepository.kt` | `data/repository/CurrentUserRepositoryTest.kt` |
 | `domain/validator/UrlValidator.kt` | `domain/validator/UrlValidatorTest.kt` |
 
+## Kotlin/Native-Sensitive Tests (`commonTest`)
+
+The default home for shared-code tests is `androidUnitTest`. The exception is a test
+whose point is behavior that can differ between the JVM and Kotlin/Native — e.g.
+surrogate-pair string handling that must be verified on the target that ships it to
+iOS. Those tests go in `shared/src/commonTest/`, mirroring the same `commonMain`
+package path. They still run under `./gradlew :shared:testDebugUnitTest`, and
+additionally on the native test tasks (e.g. `iosSimulatorArm64Test`) — which is the
+reason to put them there. State that reason in a doc comment on the test class (see
+`features/enter_phone_number/domain/CountryTest.kt`).
+
 ## Package Naming
 
 Test packages must match the source package exactly. A test for `{package}.features.login.domain.LoginUseCase` lives in package `{package}.features.login.domain` with file `LoginUseCaseTest.kt`. (`{package}` is a placeholder — use the project's own root package, read from any existing source file, never a hardcoded vendor package.)

@@ -16,35 +16,33 @@ All feature views must follow this consistent structure:
 ```swift
 struct FeatureView: View {
     @StateViewModel var viewModel: FeatureViewModel = KoinDependencies().featureViewModel
-    
+
     var body: some View {
-        Content(
-            state: viewModel.state,
-            onAction1: viewModel.onAction1,
-            onAction2: viewModel.onAction2
-        )
-        .onAppear(perform: viewModel.onAppear)
-        .alert(error: viewModel.state.errorDialog, onClose: viewModel.onCloseErrorDialog)
-        .handleNavigation(viewModel)
+        Content(state: viewModel.state)
+            .onAppear(perform: viewModel.onAppear)
+            .handleNavigation(viewModel)
     }
 }
 
 private struct Content: View {
     let state: FeatureViewModel.State
-    let onAction1: () -> Void
-    let onAction2: (String) -> Void
-    
+
     var body: some View {
         // UI implementation
     }
 }
 ```
 
+Callbacks are closure fields **on the shared `State`** (`state.onSendTap`), wired once in
+the ViewModel's `init` — see `kmp-viewmodel-state`. `Content` therefore usually takes only
+`state`. When a State doesn't carry its callbacks (older screens), pass them into
+`Content` as parameters instead; don't reach into `viewModel` from `Content` either way.
+
 ### Key Principles
 - **Main View**: Contains ViewModel injection and lifecycle management
-- **Private Content View**: Contains actual UI implementation, receives state and callbacks as parameters
+- **Private Content View**: Contains actual UI implementation, receives state (and, for older screens, callbacks) as parameters
 - **State-driven UI**: All UI decisions based on ViewModel state
-- **Callback Pattern**: Actions passed as closures from main view to content view
+- **Callback Pattern**: Actions are closure fields on the shared State; older screens pass them from main view to content view as parameters
 - **Separation of Concerns**: ViewModels handle logic, Views handle presentation
 
 ## 🔗 ViewModel Integration
@@ -62,9 +60,16 @@ private struct Content: View {
 Every feature view must include these modifiers:
 ```swift
 .onAppear(perform: viewModel.onAppear)
-.alert(error: viewModel.state.errorDialog, onClose: viewModel.onCloseErrorDialog)  
 .handleNavigation(viewModel)
 ```
+
+Add `.alert(error:onClose:)` **only** when the screen's State exposes a dedicated
+dialog-style error field (a screen-blocking error, e.g. a failed purchase):
+```swift
+.alert(error: viewModel.state.errorAlert, onClose: viewModel.onDismissError)
+```
+Screens whose errors render inline from state — e.g. a validation message under a
+text field — need no alert modifier.
 
 ## 📱 Navigation
 
@@ -117,10 +122,17 @@ Use standardized corner radius constants from `CGFloat+CornerRadius.swift`:
 
 ## 🔧 Error Handling
 
-### Alert Pattern
-Use standardized alert extension for error display:
+### Inline Errors (default)
+Most errors belong in state and render in place — a message field on the screen's State
+or a sub-state (e.g. a row's `errorMessage`), shown as styled text where the error
+happened. See `kmp-viewmodel-state` for where error copy lives.
+
+### Alert Pattern (dialog-style errors only)
+When a screen-blocking error warrants a dialog, the State exposes an
+`errorAlert: String?` field (set on failure, cleared by an `onDismissError()` action)
+and the view uses the standardized alert extension:
 ```swift
-.alert(error: viewModel.state.errorDialog, onClose: viewModel.onCloseErrorDialog)
+.alert(error: viewModel.state.errorAlert, onClose: viewModel.onDismissError)
 ```
 
 ### Error Extension
@@ -215,7 +227,7 @@ For Content views, provide realistic state:
         state: FeatureViewModel.State(
             title: "Sample Title",
             isLoading: false,
-            errorDialog: nil
+            errorAlert: nil
         ),
         onAction: {}
     )
