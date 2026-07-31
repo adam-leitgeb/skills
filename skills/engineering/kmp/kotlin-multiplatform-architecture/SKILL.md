@@ -20,9 +20,11 @@ user-invocable: false
 ### MVVM Pattern
 - ViewModels extend `BaseViewModel<State>` (state and ViewModel machinery only) or `NavigationViewModel<State>` (adds navigation)
 - Use `NavigationViewModel` for screen ViewModels that use navigation (`navigate()`, `NavigationState`); use `BaseViewModel` for screens that do not
-- State should be immutable data classes nested inside ViewModels implementing `ViewModelState`
-- Use StateFlow for reactive state management
+- State is nested inside the ViewModel and implements `ViewModelState`
 - Navigation is handled through `NavigationState` and `navigate()` on `NavigationViewModel` (from navigation kit)
+- **How to shape that State — sealed renderings vs a status field, deriving UI state
+  instead of storing flags, where errors live — is `kmp-viewmodel-state`.** Don't
+  duplicate those rules here.
 
 ### Dependency Injection (Koin)
 - Each feature should have its own DI module (e.g., `selectCountryModule`)
@@ -68,22 +70,9 @@ features/feature_name/
 - Repositories handle data persistence and API calls
 
 ### ViewModel Structure
-- Use MARK comments to organize code sections:
-  ```kotlin
-  // MARK: - Properties
-  // MARK: - Initialization  
-  // MARK: - Actions
-  // MARK: - Helpers
-  ```
-- State should be a nested data class implementing `ViewModelState`
 - Use `viewModelScope.launch` for coroutines
-- Handle errors gracefully with try-catch blocks
-
-### State Management
-- State classes should be immutable data classes
-- Use `state = state.copy(...)` for state updates
-- Observe state changes with `states.map { }.distinctUntilChanged()`
-- Enable/disable UI elements based on state properties
+- Organize with `// MARK: -` sections (topical, not a fixed set)
+- State shape, status modelling and error handling: see `kmp-viewmodel-state`
 
 ### Naming Conventions
 - ViewModels: `FeatureNameViewModel`
@@ -104,9 +93,10 @@ features/feature_name/
 6. UI reacts to State changes
 
 ### Error Handling
-- Catch exceptions in ViewModels and update error state
-- Use sealed classes for different error types when appropriate
-- Display user-friendly error messages
+- Failure modes are a sealed taxonomy in the domain layer, carrying data only
+- User-facing copy is presentation's job — a domain type must never import
+  `presentation` (that inverts the dependency direction)
+- How a ViewModel turns an error into state: see `kmp-viewmodel-state`
 
 ## 🎯 Platform-Specific Rules
 
