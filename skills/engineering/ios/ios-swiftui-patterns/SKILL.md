@@ -63,13 +63,16 @@ Every feature view must include these modifiers:
 .handleNavigation(viewModel)
 ```
 
-Add `.alert(error:onClose:)` **only** when the screen's State exposes a dedicated
-dialog-style error field (a screen-blocking error, e.g. a failed purchase):
+Add an alert modifier **only** when the screen's State exposes a dedicated
+dialog-style error field (a screen-blocking error, e.g. a failed load or purchase).
+The full-featured shape is a derived `errorAlert: COAlertState?` (title, optional
+message, actions such as a retry) rendered by `alert(_:onClose:)`:
 ```swift
-.alert(error: viewModel.state.errorAlert, onClose: viewModel.onDismissError)
+.alert(viewModel.state.errorAlert, onClose: viewModel.state.onDismissErrorTap)
 ```
-Screens whose errors render inline from state — e.g. a validation message under a
-text field — need no alert modifier.
+For a bare message with just a Close button there is also `.alert(error: String?,
+onClose:)`. Screens whose errors render inline from state — e.g. a validation
+message under a text field — need no alert modifier.
 
 ## 📱 Navigation
 
@@ -128,12 +131,17 @@ or a sub-state (e.g. a row's `errorMessage`), shown as styled text where the err
 happened. See `kmp-viewmodel-state` for where error copy lives.
 
 ### Alert Pattern (dialog-style errors only)
-When a screen-blocking error warrants a dialog, the State exposes an
-`errorAlert: String?` field (set on failure, cleared by an `onDismissError()` action)
-and the view uses the standardized alert extension:
+When a screen-blocking error warrants a dialog, the State exposes a (usually derived)
+`errorAlert: COAlertState?` — title, optional message, and actions built from stored
+copy and state callbacks — cleared by an `onDismissError()` action, and the view uses
+the standardized alert extension:
 ```swift
-.alert(error: viewModel.state.errorAlert, onClose: viewModel.onDismissError)
+.alert(viewModel.state.errorAlert, onClose: viewModel.state.onDismissErrorTap)
 ```
+Guard `onDismissError()` on the error actually being present: after an action button
+is tapped, both platforms also fire `onClose`, and the guard keeps that stray dismiss
+from clobbering a retry already in flight. A plain-message variant
+`.alert(error: String?, onClose:)` exists for alerts with no actions.
 
 ### Error Extension
 The `View+Alert` extension handles:
