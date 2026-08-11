@@ -77,9 +77,16 @@ sealed class SubmitStatus {
 ```
 
 Declare it **top level** in the presentation package, not nested in `State` or the
-ViewModel — nested sealed classes reach Swift as
-`{FeatureName}ViewModelStateSubmitStatusFailed`. Top level they stay
-`SubmitStatus.Failed`.
+ViewModel. Top level it stays `SubmitStatus.Failed` in Swift; nested it becomes a
+path several segments deep that every call site has to spell out.
+
+> **How Kotlin types actually reach Swift.** A type nested in a *class* keeps a dotted
+> Swift path — `{FeatureName}ViewModel.State` is what the SwiftUI `Content` struct
+> declares. A member of a *sealed interface* does not: an interface exports as an
+> Obj-C protocol, which cannot nest types, so `TemplateAppScene.Initial` arrives
+> flattened as `TemplateAppSceneInitial` — which is why `AppScene+Convertible.swift`
+> matches on `case is TemplateAppSceneInitial`. Keep status types top level and the
+> question never comes up.
 
 ### Both together
 

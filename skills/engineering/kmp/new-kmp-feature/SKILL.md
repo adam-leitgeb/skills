@@ -171,8 +171,13 @@ val {featureName}Module = module {
 
 #### 2.2 Add TemplateAppScene to Android Navigation
 - [ ] Open `composeApp/src/androidMain/kotlin/.../library/navigation/mapToDestination.kt`
-- [ ] Add case to `when` expression: `TemplateAppScene.{FeatureName} -> {FeatureName}`
-- [ ] Add serializable object: `@Serializable object {FeatureName}`
+- [ ] Add case to `when` expression: `is TemplateAppScene.{FeatureName} -> {FeatureName}Scene`
+- [ ] Add serializable object: `@Serializable object {FeatureName}Scene`
+
+> The Compose route type is **`{FeatureName}Scene`**, a separate `@Serializable object`
+> declared in this file — not the `TemplateAppScene.{FeatureName}` member it maps from.
+> `App.kt` then registers `composable<{FeatureName}Scene>` (see
+> `android-implementation-from-ios`).
 
 #### 2.3 Add TemplateAppScene to iOS Navigation
 - [ ] Open `iosApp/iosApp/App/AppScene.swift`
