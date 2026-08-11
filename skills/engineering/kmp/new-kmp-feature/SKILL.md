@@ -20,6 +20,9 @@ lives in its own skill, so each rule has one home:
 | SwiftUI view structure | `ios-swiftui-patterns` |
 | Unit tests | `android-unittest-structure` |
 
+> **Building the shared half first, UI later?** Invoke `new-kmp-feature-shared-only`.
+> It follows this checklist but stops at placeholder iOS/Android views.
+
 ## 📋 Prerequisites
 
 Before starting, decide on:
