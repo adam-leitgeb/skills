@@ -20,8 +20,10 @@ lives in its own skill, so each rule has one home:
 | SwiftUI view structure | `ios-swiftui-patterns` |
 | Unit tests | `android-unittest-structure` |
 
-> **Building the shared half first, UI later?** Invoke `new-kmp-feature-shared-only`.
-> It follows this checklist but stops at placeholder iOS/Android views.
+> This checklist builds the whole feature in one pass. When the shared half is being
+> built first from design screenshots and the UI follows later, the user invokes
+> `new-kmp-feature-shared-only` — it follows this checklist but stops at placeholder
+> iOS/Android views. That skill is user-invoked only; don't route to it yourself.
 
 ## 📋 Prerequisites
 

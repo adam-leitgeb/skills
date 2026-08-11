@@ -1,6 +1,6 @@
 ---
 name: new-kmp-feature-shared-only
-description: Scaffold only the shared (commonMain) half of a new KMP feature — ViewModel, State, use cases, repository, DI, scene wiring — from screenshots of the design, plus empty but buildable iOS and Android views. Use when the UI will be built later.
+description: Scaffold only the shared (commonMain) half of a new KMP feature from screenshots of the design — ViewModel, State, use cases, repository, DI, scene wiring — plus empty but buildable iOS and Android views.
 argument-hint: "<feature name> + screenshots of the frames — e.g. Payment Method"
 disable-model-invocation: true
 ---
@@ -57,7 +57,10 @@ it's thinner. When the design arrives, phase two should be writing views against
 State that already holds everything they need.
 
 **Strings.** Every string the `State` carries needs a key in `localization.json`
-(see `localization-kmp`). With screenshots, that is most of the screen's copy —
+(see `localization-kmp`). A new feature means a new namespace, so **register it in
+`localizationNamespaces` in `shared/build.gradle.kts`** — without that entry the
+codegen emits no `{FeatureName}Strings` and §4's build fails on unresolved
+references. With screenshots, that is most of the screen's copy —
 `kmp-viewmodel-state` requires visible copy to be a *stored* field with a localized
 default, so it lands in this phase, not the next one. Only copy you can't read
 anywhere — a message behind an error you're stubbing — waits for phase two.
@@ -120,9 +123,17 @@ private struct Content: View {
 }
 ```
 
-If `State` is sealed, the `#Preview` uses a `+Preview` factory
-(`{FeatureName}ViewModel.State.Content.companion.previewSingle()`), not a bare
-initializer — that keeps the preview compiling as the state grows.
+If `State` is sealed, the `#Preview` constructs a variant through a `+Preview`
+factory rather than a bare initializer, so it keeps compiling as the state grows.
+The export shapes that call twice over:
+
+- **Nested types flatten in Swift.** `State.Content` arrives as
+  `{FeatureName}ViewModelStateContent`, so the call is
+  `{FeatureName}ViewModelStateContent.companion.previewSingle()` — not a dotted
+  path through `State` (`kmp-viewmodel-state`, "Status").
+- **The factory is an extension on the companion**, so the variant must declare
+  `companion object` — an empty one is enough (`state-model-preview-helpers`,
+  hard rule 3). Add it when you write the variant; nothing else will remind you.
 
 Register the ViewModel in `KoinDependencies.kt` (§3.2) — without it the view can't
 resolve and iOS won't build.
@@ -177,9 +188,14 @@ then build the Xcode project if the project has a scheme for it. Report what you
 actually ran and what passed; if a build fails for a reason outside the feature
 (missing SDK, unrelated breakage), say so rather than declaring success.
 
-Watch for the export traps that only surface here: default arguments and nested
-sealed types don't cross into Swift cleanly — see `state-model-preview-helpers` and
-`kmp-viewmodel-state`.
+Two export traps surface only at this step:
+
+- **Nested sealed types flatten** — a Swift call site that walks a dotted path
+  through `State` won't compile (`kmp-viewmodel-state`).
+- **Preview helpers take no parameters** — defaults on a `previewX()` don't survive
+  the export (`state-model-preview-helpers`, hard rule 1). This is about the
+  helpers only: defaulted constructor params on `State` itself are the convention
+  here and stay (`val title: String = FeatureStrings.title()`). Don't "fix" them.
 
 ## 5. Hand off
 
@@ -202,7 +218,8 @@ Phase two is `ios-swiftui-patterns` for the iOS screen, then
 
 - [ ] Every supplied frame accounted for — as a rendering, a status, or a deliberate skip
 - [ ] Each visible control has an `on{Action}()`; each varying element has a field
-- [ ] Visible copy stored on `State` with keys in `localization.json`
+- [ ] Visible copy stored on `State` with keys in `localization.json`, namespace registered in `localizationNamespaces`
+- [ ] Sealed-`State` variants declare `companion object`; Swift previews use the flattened type name
 - [ ] No spacing/color/typography leaked into shared code
 - [ ] Shared feature complete per `new-kmp-feature` §1 — nothing stubbed that the request specified
 - [ ] `State` shaped per `kmp-viewmodel-state`; `+Preview` factories exist
