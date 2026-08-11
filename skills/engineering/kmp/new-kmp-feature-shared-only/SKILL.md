@@ -130,17 +130,21 @@ private struct Content: View {
 }
 ```
 
-If `State` is sealed, the `#Preview` constructs a variant through a `+Preview`
-factory rather than a bare initializer, so it keeps compiling as the state grows.
-The export shapes that call twice over:
+Once `State` carries more than defaults, the `#Preview` constructs it through a
+`+Preview` factory rather than a bare initializer, so it keeps compiling as the
+state grows. Two things shape that call:
 
-- **Nested types flatten in Swift.** `State.Content` arrives as
-  `{FeatureName}ViewModelStateContent`, so the call is
-  `{FeatureName}ViewModelStateContent.companion.previewSingle()` — not a dotted
-  path through `State` (`kmp-viewmodel-state`, "Status").
-- **The factory is an extension on the companion**, so the variant must declare
+- **Call it through leading-dot inference** — `Content(state: .companion.previewSingle())`.
+  `Content`'s parameter type is already known, so the type name never appears and the
+  preview survives a rename. Spell the type out only where inference can't reach it,
+  as a row state does: `EmergencyContactRowState.companion.previewList()`.
+- **The factory is an extension on the companion**, so `State` must declare
   `companion object` — an empty one is enough (`state-model-preview-helpers`,
-  hard rule 3). Add it when you write the variant; nothing else will remind you.
+  hard rule 3). Add it when you write the `State`; nothing else will remind you.
+  If `State` is sealed, the companion goes on the **sealed base**, not on each
+  variant, and the factory returns the concrete variant
+  (`fun State.Companion.previewContent(): State.Content`) — `data object` variants
+  can't declare a companion at all.
 
 Register the ViewModel in `KoinDependencies.kt` (§3.2) — without it the view can't
 resolve and iOS won't build.
@@ -154,10 +158,13 @@ Same split as `android-implementation-from-ios` (`Screen` = injection + lifecycl
 @Composable
 fun {FeatureName}Screen(navController: NavController) {
     val viewModel: {FeatureName}ViewModel = koinViewModel()
-    val state by viewModel.states.collectAsState()
+    val state by viewModel.states.collectAsStateWithLifecycle()
 
     HandleNavigation(viewModel, navController)   // only if NavigationViewModel
-    OnLifecycleStart { viewModel.onAppear() }
+
+    LaunchedEffect(Unit) {
+        viewModel.onAppear()
+    }
 
     Content(state = state)
 }
@@ -170,7 +177,14 @@ private fun Content(state: {FeatureName}ViewModel.State) {
 }
 ```
 
-Register the route in `App.kt`: `composable<{FeatureName}> { {FeatureName}Screen(navController = navController) }`.
+Register the route in `app/App.kt`, against the `Scene` object `mapToDestination.kt`
+declares — the route type is `{FeatureName}Scene`, not `{FeatureName}`:
+
+```kotlin
+composable<{FeatureName}Scene> {
+    {FeatureName}Screen(navController = navController)
+}
+```
 
 **Do not** wire the state into either placeholder beyond passing it in. Reading
 fields now means rewriting them in phase two.
@@ -185,7 +199,10 @@ the real module names before assuming `:shared` / `:composeApp`:
 ./gradlew :shared:build :composeApp:assembleDebug
 ```
 
-For iOS, the ViewModel has to survive the Swift export — link the framework:
+For iOS, the ViewModel has to survive the Swift export — link the framework. The
+task name follows the target that declares `binaries.framework`; check
+`shared/build.gradle.kts` if `./gradlew :shared:tasks` doesn't list this one (a
+CocoaPods or XCFramework setup names it differently):
 
 ```bash
 ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
@@ -197,8 +214,10 @@ actually ran and what passed; if a build fails for a reason outside the feature
 
 Two export traps surface only at this step:
 
-- **Nested sealed types flatten** — a Swift call site that walks a dotted path
-  through `State` won't compile (`kmp-viewmodel-state`).
+- **Status types belong at top level** — nested inside `State` they export under an
+  unwieldy flattened name; declared top level in the presentation package they stay
+  `OtpSendStatus.Failed` (`kmp-viewmodel-state`, "Status"). `{FeatureName}ViewModel.State`
+  itself stays a dotted path in Swift and is fine.
 - **Preview helpers take no parameters** — defaults on a `previewX()` don't survive
   the export (`state-model-preview-helpers`, hard rule 1). This is about the
   helpers only: defaulted constructor params on `State` itself are the convention
@@ -212,8 +231,9 @@ Close with a short summary, not a wall of text:
   line each, plus any ambiguity you resolved by choosing. This is the part worth
   checking; everything below it is mechanical.
 - **Created** — the shared files, grouped by layer.
-- **Registered** — `featureModule.kt`, `AppScene` (all three), `KoinDependencies`,
-  `App.kt`, analytics.
+- **Registered** — `featureModule.kt`, the scene in `AppScene.kt`, `mapToDestination.kt`
+  (`when` case + `@Serializable object {FeatureName}Scene`), the three iOS
+  `AppScene*.swift` files, `KoinDependencies`, `App.kt`, analytics.
 - **Left open** — every `TODO` you planted, and the copy still missing from
   `localization.json`.
 - **Next** — the two placeholder views to replace, by path.
@@ -226,7 +246,7 @@ Phase two is `ios-swiftui-patterns` for the iOS screen, then
 - [ ] Every supplied frame accounted for — as a rendering, a status, or a deliberate skip
 - [ ] Each visible control has an `on{Action}()`; each varying element has a field
 - [ ] Visible copy stored on `State` with keys in `localization.json`, namespace registered in `localizationNamespaces`
-- [ ] Sealed-`State` variants declare `companion object`; Swift previews use the flattened type name
+- [ ] `State` (or its sealed base) declares `companion object`; Swift previews call `.companion.previewX()`
 - [ ] No spacing/color/typography leaked into shared code
 - [ ] Shared feature complete per `new-kmp-feature` §1 — nothing stubbed that the request specified
 - [ ] `State` shaped per `kmp-viewmodel-state`; `+Preview` factories exist
