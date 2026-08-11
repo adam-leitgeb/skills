@@ -47,7 +47,7 @@ Anything else you can't infer becomes a `TODO` in the scaffold, not a question.
 Do every step of `new-kmp-feature` §1 (feature directories, ViewModel + `State`,
 `+Preview` factories, use cases, repository, DI module, `featureModule.kt`
 registration) and §2 (scene in `AppScene.kt`, Android `mapToDestination.kt`, the
-three iOS `AppScene*.swift` files, analytics key).
+three iOS `AppScene*.swift` files, analytics key if the project has analytics).
 
 **How complete should the shared code be?** As complete as the request allows:
 
@@ -111,64 +111,31 @@ single placeholder and nothing else — no layout, no design tokens, no componen
 
 ### iOS — `iosApp/iosApp/Features/{FeatureName}/{FeatureName}View.swift`
 
-Use `new-kmp-feature` §3.1's template (`@StateViewModel`, `.onAppear`, private
-`Content`, `#Preview`), keeping its placeholder body. Drop `.handleNavigation` if
+Use `new-kmp-feature` §3.1's template verbatim (`@StateViewModel`, `.onAppear`,
+private `Content`, `#Preview`) — its placeholder `Content` body is already exactly
+the placeholder this phase wants, so add nothing to it. Drop `.handleNavigation` if
 the ViewModel is a plain `BaseViewModel` — it only applies to `NavigationViewModel`,
-same as `HandleNavigation` on Android below:
-
-```swift
-private struct Content: View {
-    let state: {FeatureName}ViewModel.State
-
-    var body: some View {
-        VStack {
-            Text("{FeatureName}")
-                .font(.title)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-```
+same as `HandleNavigation` on Android below.
 
 Once `State` carries more than defaults, the `#Preview` constructs it through a
 `+Preview` factory rather than a bare initializer, so it keeps compiling as the
-state grows. Two things shape that call:
-
-- **Call it through leading-dot inference** — `Content(state: .companion.previewSingle())`.
-  `Content`'s parameter type is already known, so the type name never appears and the
-  preview survives a rename. Spell the type out only where inference can't reach it,
-  as a row state does: `EmergencyContactRowState.companion.previewList()`.
-- **The factory is an extension on the companion**, so `State` must declare
-  `companion object` — an empty one is enough (`state-model-preview-helpers`,
-  hard rule 3). Add it when you write the `State`; nothing else will remind you.
-  If `State` is sealed, the companion goes on the **sealed base**, not on each
-  variant, and the factory returns the concrete variant
-  (`fun State.Companion.previewContent(): State.Content`) — `data object` variants
-  can't declare a companion at all.
+state grows. The call conventions — leading-dot inference, the `companion object`
+requirement, where the companion goes on a sealed `State` — live in
+`state-model-preview-helpers`. One thing to do *now*: declare the `companion object`
+when you write the `State` (on the sealed base if it's sealed); nothing else will
+remind you.
 
 Register the ViewModel in `KoinDependencies.kt` (§3.2) — without it the view can't
 resolve and iOS won't build.
 
 ### Android — `composeApp/src/androidMain/.../features/{feature_name}/{FeatureName}Screen.kt`
 
-Same split as `android-implementation-from-ios` (`Screen` = injection + lifecycle,
-`Content` = UI), with a placeholder `Content`:
+Use the `Screen` half of `android-implementation-from-ios`'s screen-structure
+template as is (injection, `collectAsStateWithLifecycle()`, `HandleNavigation` —
+only if `NavigationViewModel` — and `onAppear()` via `LaunchedEffect(Unit)`),
+passing the state to this placeholder `Content` instead of a real one:
 
 ```kotlin
-@Composable
-fun {FeatureName}Screen(navController: NavController) {
-    val viewModel: {FeatureName}ViewModel = koinViewModel()
-    val state by viewModel.states.collectAsStateWithLifecycle()
-
-    HandleNavigation(viewModel, navController)   // only if NavigationViewModel
-
-    LaunchedEffect(Unit) {
-        viewModel.onAppear()
-    }
-
-    Content(state = state)
-}
-
 @Composable
 private fun Content(state: {FeatureName}ViewModel.State) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -177,8 +144,8 @@ private fun Content(state: {FeatureName}ViewModel.State) {
 }
 ```
 
-Register the route in `app/App.kt`, against the `Scene` object `mapToDestination.kt`
-declares — the route type is `{FeatureName}Scene`, not `{FeatureName}`:
+Register the route in `app/App.kt` against the `{FeatureName}Scene` object that
+`mapToDestination.kt` declares (`new-kmp-feature` §2.2 explains the mapping):
 
 ```kotlin
 composable<{FeatureName}Scene> {
@@ -192,32 +159,33 @@ fields now means rewriting them in phase two.
 ## 4. Verify it builds
 
 Compiling is the deliverable — a scaffold that doesn't build is worse than none.
-Run the project's own wrapper; task names vary, so check `settings.gradle.kts` for
-the real module names before assuming `:shared` / `:composeApp`:
+One invocation of the project's own wrapper covers both platforms:
+`assembleDebug` compiles the shared module's common and Android halves
+transitively, and the link task runs the Kotlin→Swift export the iOS build needs —
+the ViewModel has to survive it:
 
 ```bash
-./gradlew :shared:build :composeApp:assembleDebug
+./gradlew :composeApp:assembleDebug :shared:linkDebugFrameworkIosSimulatorArm64
 ```
 
-For iOS, the ViewModel has to survive the Swift export — link the framework. The
-task name follows the target that declares `binaries.framework`; check
-`shared/build.gradle.kts` if `./gradlew :shared:tasks` doesn't list this one (a
-CocoaPods or XCFramework setup names it differently):
+Don't reach for `:shared:build` here — it also links release frameworks for every
+iOS target and runs the full test suite, minutes of work that verify nothing about
+a scaffold. Names vary by project: check `settings.gradle.kts` for the real module
+names before assuming `:shared` / `:composeApp`, and `shared/build.gradle.kts` for
+the target that declares `binaries.framework` if the link task is named differently
+(a CocoaPods or XCFramework setup names it differently).
 
-```bash
-./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
-```
-
-then build the Xcode project if the project has a scheme for it. Report what you
+Then build the Xcode project if the project has a scheme for it. Report what you
 actually ran and what passed; if a build fails for a reason outside the feature
 (missing SDK, unrelated breakage), say so rather than declaring success.
 
 Two export traps surface only at this step:
 
-- **Status types belong at top level** — nested inside `State` they export under an
-  unwieldy flattened name; declared top level in the presentation package they stay
+- **Status types belong at top level** — nested inside `State` they sit past the one
+  level of class nesting the Swift export preserves, so they flatten into a
+  concatenated name; declared top level in the presentation package they stay
   `OtpSendStatus.Failed` (`kmp-viewmodel-state`, "Status"). `{FeatureName}ViewModel.State`
-  itself stays a dotted path in Swift and is fine.
+  itself is one level deep, keeps its dotted path, and is fine.
 - **Preview helpers take no parameters** — defaults on a `previewX()` don't survive
   the export (`state-model-preview-helpers`, hard rule 1). This is about the
   helpers only: defaulted constructor params on `State` itself are the convention
@@ -233,7 +201,8 @@ Close with a short summary, not a wall of text:
 - **Created** — the shared files, grouped by layer.
 - **Registered** — `featureModule.kt`, the scene in `AppScene.kt`, `mapToDestination.kt`
   (`when` case + `@Serializable object {FeatureName}Scene`), the three iOS
-  `AppScene*.swift` files, `KoinDependencies`, `App.kt`, analytics.
+  `AppScene*.swift` files, `KoinDependencies`, `App.kt`, analytics (if the project
+  has it).
 - **Left open** — every `TODO` you planted, and the copy still missing from
   `localization.json`.
 - **Next** — the two placeholder views to replace, by path.
@@ -250,7 +219,7 @@ Phase two is `ios-swiftui-patterns` for the iOS screen, then
 - [ ] No spacing/color/typography leaked into shared code
 - [ ] Shared feature complete per `new-kmp-feature` §1 — nothing stubbed that the request specified
 - [ ] `State` shaped per `kmp-viewmodel-state`; `+Preview` factories exist
-- [ ] Scene registered in shared, Android, and all three iOS files; analytics key added
+- [ ] Scene registered in shared, Android, and all three iOS files; analytics key added (if the project uses analytics)
 - [ ] ViewModel in `KoinDependencies`; module in `featureModule.kt`
 - [ ] iOS view: lifecycle modifiers present (`.handleNavigation` iff `NavigationViewModel`), `Content` still a placeholder
 - [ ] Android screen: registered in `App.kt`, `Content` still a placeholder

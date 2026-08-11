@@ -66,10 +66,12 @@ Rules:
 - Call `onAppear()` from `LaunchedEffect(Unit)`, and collect with
   `collectAsStateWithLifecycle()` rather than `collectAsState()`.
 
-> **A note on `LaunchedEffect(Unit)`.** It fires at composition, so it runs a beat
-> earlier than iOS `.onAppear` — before an enter animation finishes — and it re-fires
-> if the screen leaves and re-enters the back stack. That has been fine for `onAppear()`
-> loads so far. If a screen ever needs the fully-visible timing, introduce a shared
+> **A note on `LaunchedEffect(Unit)`.** It fires when the screen enters composition —
+> effectively the same moment SwiftUI fires `.onAppear` (at transition start, not
+> after the enter animation) — and it re-fires when the screen re-enters composition
+> after back navigation, just as `.onAppear` re-fires when a view reappears. Both are
+> parity with iOS, so don't add delays or one-shot guards to "match" it. If a screen
+> ever genuinely needs fully-visible, post-animation timing, introduce a shared
 > `OnLifecycleStart` helper and switch every screen at once; don't hand-roll one in a
 > single feature.
 
@@ -144,9 +146,9 @@ Register the screen in `composeApp/src/androidMain/.../app/App.kt`:
 composable<{FeatureName}Scene> { {FeatureName}Screen(navController = navController) }
 ```
 
-The route type carries a `Scene` suffix — it is the `@Serializable object` declared in
-`.../library/navigation/mapToDestination.kt`, not the `TemplateAppScene` member it maps
-from. That mapping should already exist from the iOS side.
+The `{FeatureName}Scene` route object is declared in
+`.../library/navigation/mapToDestination.kt` and should already exist from the iOS
+side (`new-kmp-feature` §2.2 explains the mapping and the `Scene` suffix).
 
 ## Verification checklist
 

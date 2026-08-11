@@ -24,7 +24,7 @@ These are consumed by SwiftUI `#Preview` blocks and Compose `@Preview` functions
 
    Same package, same directory.
 
-3. **`companion object` must exist on the model.** The helpers are extensions on the model's companion (`fun ResultTileState.Companion.previewSingle()`), so the model needs a `companion object` declared. If the model has no companion members, an empty `companion object` is enough.
+3. **`companion object` must exist on the model.** The helpers are extensions on the model's companion (`fun ResultTileState.Companion.previewSingle()`), so the model needs a `companion object` declared. If the model has no companion members, an empty `companion object` is enough. For a **sealed** model (a whole-screen `State` with variants), the companion goes on the **sealed base**, not on each variant — `data object` variants can't declare a companion at all — and each factory returns a concrete variant: `fun State.Companion.previewContent(): State.Content`.
 
 4. **Create both** `previewSingle()` and `previewList()` for models the UI renders as a collection — row, tile, item states. A whole-screen ViewModel `State` is never rendered as a list: give it `previewSingle()` plus a named zero-arg variant per screen mode (`previewSending()`, `previewError()`, …) and skip `previewList()`. Add extra named variants as the UI needs them.
 
@@ -90,11 +90,14 @@ data class ResultTileState(
 
 ## Consuming the helpers in previews
 
-**SwiftUI** — call through `.companion`:
+**SwiftUI** — call through `.companion`, with leading-dot inference wherever the
+parameter type is known: the type name never appears, so the preview survives a
+rename. Spell the type out only where inference can't reach it (as in the `ForEach`
+below):
 
 ```swift
 #Preview {
-    ResultTile(state: ResultTileState.companion.previewSingle())
+    ResultTile(state: .companion.previewSingle())
 }
 
 #Preview("List") {
