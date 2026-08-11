@@ -30,10 +30,15 @@ Derive, per `new-kmp-feature`'s naming table:
 - `{FeatureName}` — PascalCase class prefix
 - `{featureName}` — camelCase DI module and Koin property
 
-Then ask **only these two**, and only if the request doesn't already answer them:
+**Read the frames before asking anything** (§2.1). They usually settle the first
+question below on their own — a control that leaves the screen means
+`NavigationViewModel`. Then ask **only what is still open**, and at most these two:
 
-1. **Does the screen navigate away?** → `NavigationViewModel<State>` vs `BaseViewModel<State>`.
-2. **Where does its data come from?** — an existing repository/API, a new one, or nothing yet.
+1. **Does the screen navigate away?** → `NavigationViewModel<State>` vs
+   `BaseViewModel<State>`. Ask only if there are no frames, or none of them shows a
+   way off the screen and the prose doesn't say either.
+2. **Where does its data come from?** — an existing repository/API, a new one, or
+   nothing yet. Frames rarely answer this one.
 
 Anything else you can't infer becomes a `TODO` in the scaffold, not a question.
 
@@ -86,9 +91,9 @@ their own row state model with `previewSingle()` / `previewList()`
 **Controls → actions.** Every tappable element is an `on{Action}()` on the
 ViewModel. Name it for what it does, not for the control that triggers it
 (`onConfirmPayment()`, not `onTapButton()`). A control that leaves the screen means
-`NavigationViewModel` and a `navigate()` call — which answers question 1 in §1
-without asking. A destination you can see in another frame gets a real
-`NavigationState` case; one you can't, a `TODO`.
+`NavigationViewModel` and a `navigate()` call — this is what settles §1's first
+question. A destination you can see in another frame gets a real `NavigationState`
+case; one you can't, a `TODO`.
 
 **Ignore the pixels.** Spacing, colors, typography, corner radii and asset names
 are phase two's problem — they belong to the views, and nothing about them belongs
@@ -106,8 +111,10 @@ single placeholder and nothing else — no layout, no design tokens, no componen
 
 ### iOS — `iosApp/iosApp/Features/{FeatureName}/{FeatureName}View.swift`
 
-Use `new-kmp-feature` §3.1's template verbatim (`@StateViewModel`, `.onAppear`,
-`.handleNavigation`, private `Content`, `#Preview`), keeping its placeholder body:
+Use `new-kmp-feature` §3.1's template (`@StateViewModel`, `.onAppear`, private
+`Content`, `#Preview`), keeping its placeholder body. Drop `.handleNavigation` if
+the ViewModel is a plain `BaseViewModel` — it only applies to `NavigationViewModel`,
+same as `HandleNavigation` on Android below:
 
 ```swift
 private struct Content: View {
@@ -225,7 +232,7 @@ Phase two is `ios-swiftui-patterns` for the iOS screen, then
 - [ ] `State` shaped per `kmp-viewmodel-state`; `+Preview` factories exist
 - [ ] Scene registered in shared, Android, and all three iOS files; analytics key added
 - [ ] ViewModel in `KoinDependencies`; module in `featureModule.kt`
-- [ ] iOS view: template modifiers present, `Content` still a placeholder
+- [ ] iOS view: lifecycle modifiers present (`.handleNavigation` iff `NavigationViewModel`), `Content` still a placeholder
 - [ ] Android screen: registered in `App.kt`, `Content` still a placeholder
 - [ ] Neither placeholder reads `state` fields
 - [ ] Gradle + iOS link verified, results reported honestly
