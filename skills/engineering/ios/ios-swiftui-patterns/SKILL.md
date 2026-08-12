@@ -57,10 +57,12 @@ the ViewModel's `init` — see `kmp-viewmodel-state`. `Content` therefore usuall
 ```
 
 ### Required ViewModel Modifiers
-Every feature view must include these modifiers:
+Every feature view includes `.onAppear`; add `.handleNavigation(viewModel)` only
+when the ViewModel is a `NavigationViewModel` — a plain `BaseViewModel` screen
+takes neither navigation wiring (see `new-kmp-feature` Tip 4):
 ```swift
 .onAppear(perform: viewModel.onAppear)
-.handleNavigation(viewModel)
+.handleNavigation(viewModel)   // NavigationViewModel only
 ```
 
 Add an alert modifier **only** when the screen's State exposes a dedicated
@@ -77,7 +79,7 @@ message under a text field — need no alert modifier.
 ## 📱 Navigation
 
 ### Navigation Integration
-- Use `.handleNavigation(viewModel)` modifier on all feature views
+- Use `.handleNavigation(viewModel)` on feature views backed by a `NavigationViewModel`
 - Navigation state is handled automatically through `NavigationHandlerModifier`
 - ViewModels emit navigation events through `navigationStatesFlow`
 - Navigation is declarative based on ViewModel state
@@ -227,16 +229,14 @@ private var navigationButton: some View {
 ```
 
 ### Preview with State
-For Content views, provide realistic state:
+For Content views, build state through the shared `+Preview` factories, never a
+hand-built `State(...)` initializer — factories survive renames and added fields,
+and a sealed `State` has no callable constructor (see `state-model-preview-helpers`):
 ```swift
 @available(iOS 17.0, *)
 #Preview {
     Content(
-        state: FeatureViewModel.State(
-            title: "Sample Title",
-            isLoading: false,
-            errorAlert: nil
-        ),
+        state: .companion.previewSingle(),
         onAction: {}
     )
 }

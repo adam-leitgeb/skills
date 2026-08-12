@@ -35,7 +35,7 @@ fun {FeatureName}Screen(navController: NavController) {
     val viewModel: {FeatureName}ViewModel = koinViewModel()
     val state by viewModel.states.collectAsStateWithLifecycle()
 
-    HandleNavigation(viewModel, navController)   // mirrors iOS .handleNavigation(viewModel)
+    HandleNavigation(viewModel, navController)   // NavigationViewModel only — drop for a plain BaseViewModel (mirrors iOS .handleNavigation)
 
     LaunchedEffect(Unit) {                       // mirrors iOS .onAppear(perform:)
         viewModel.onAppear()
@@ -65,15 +65,15 @@ Rules:
 - `Content`: holds `COScaffold` and the UI; receives `state` + callbacks as params.
 - Call `onAppear()` from `LaunchedEffect(Unit)`, and collect with
   `collectAsStateWithLifecycle()` rather than `collectAsState()`.
+- `HandleNavigation` mirrors iOS `.handleNavigation`: present iff the ViewModel is
+  a `NavigationViewModel` (`new-kmp-feature` Tip 4).
 
-> **A note on `LaunchedEffect(Unit)`.** It fires when the screen enters composition —
-> effectively the same moment SwiftUI fires `.onAppear` (at transition start, not
-> after the enter animation) — and it re-fires when the screen re-enters composition
-> after back navigation, just as `.onAppear` re-fires when a view reappears. Both are
-> parity with iOS, so don't add delays or one-shot guards to "match" it. If a screen
-> ever genuinely needs fully-visible, post-animation timing, introduce a shared
-> `OnLifecycleStart` helper and switch every screen at once; don't hand-roll one in a
-> single feature.
+> **A note on `LaunchedEffect(Unit)`.** It fires when the screen enters composition
+> and re-fires when the screen re-enters after back navigation — the same moments
+> SwiftUI fires `.onAppear`. Both are parity with iOS, so don't add delays or
+> one-shot guards to "match" it. If a screen ever genuinely needs fully-visible,
+> post-animation timing, add a shared lifecycle helper for it; don't hand-roll one
+> in a single feature.
 
 ## Translation tables
 
@@ -153,7 +153,7 @@ side (`new-kmp-feature` §2.2 explains the mapping and the `Scene` suffix).
 ## Verification checklist
 
 - [ ] `Screen` holds only ViewModel + lifecycle; `Content` holds `COScaffold` + UI.
-- [ ] `onAppear()` called via `LaunchedEffect(Unit)`; navigation via `HandleNavigation`.
+- [ ] `onAppear()` called via `LaunchedEffect(Unit)`; `HandleNavigation` present iff the ViewModel is a `NavigationViewModel`.
 - [ ] Layout, spacing, typography, colors, icons use the shared tokens (no hardcoded values).
 - [ ] Component props translated (`onClick` not `action`; direct string access).
 - [ ] Lazy `items(...)` have `key`; bottom buttons use `Alignment.BottomCenter` with matching content padding.
@@ -164,6 +164,6 @@ side (`new-kmp-feature` §2.2 explains the mapping and the `Scene` suffix).
 
 - iOS: `iosApp/iosApp/Features/{FeatureName}/{FeatureName}View.swift`
 - Android: `composeApp/src/androidMain/.../features/{feature_name}/{FeatureName}Screen.kt`
-- Shared: `shared/src/commonMain/.../features/{feature_name}/presentation/` (ViewModel, `{FeatureName}Strings.kt`)
+- Shared: `shared/src/commonMain/.../features/{feature_name}/presentation/` (ViewModel; strings come from the generated `{FeatureName}Strings` facade — see `localization-kmp`)
 
 Look at an already-ported screen (e.g. `LearnScreen.kt`) for the decomposition style.
