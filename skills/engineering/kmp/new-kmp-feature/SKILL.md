@@ -20,6 +20,11 @@ lives in its own skill, so each rule has one home:
 | SwiftUI view structure | `ios-swiftui-patterns` |
 | Unit tests | `android-unittest-structure` |
 
+> This checklist builds the whole feature in one pass. When the shared half is being
+> built first from design screenshots and the UI follows later, the user invokes
+> `new-kmp-feature-shared-only` — it follows this checklist but stops at placeholder
+> iOS/Android views. That skill is user-invoked only; don't route to it yourself.
+
 ## 📋 Prerequisites
 
 Before starting, decide on:
@@ -166,8 +171,13 @@ val {featureName}Module = module {
 
 #### 2.2 Add TemplateAppScene to Android Navigation
 - [ ] Open `composeApp/src/androidMain/kotlin/.../library/navigation/mapToDestination.kt`
-- [ ] Add case to `when` expression: `TemplateAppScene.{FeatureName} -> {FeatureName}`
-- [ ] Add serializable object: `@Serializable object {FeatureName}`
+- [ ] Add case to `when` expression: `is TemplateAppScene.{FeatureName} -> {FeatureName}Scene`
+- [ ] Add serializable object: `@Serializable object {FeatureName}Scene`
+
+> The Compose route type is **`{FeatureName}Scene`**, a separate `@Serializable object`
+> declared in this file — not the `TemplateAppScene.{FeatureName}` member it maps from.
+> `App.kt` then registers `composable<{FeatureName}Scene>`. This note is the one home
+> for that rule; other skills point here.
 
 #### 2.3 Add TemplateAppScene to iOS Navigation
 - [ ] Open `iosApp/iosApp/App/AppScene.swift`
@@ -189,7 +199,7 @@ val {featureName}Module = module {
   - [ ] Use `@StateViewModel` property wrapper
   - [ ] Inject ViewModel: `KoinDependencies().{featureName}ViewModel`
   - [ ] Create private `Content` struct
-  - [ ] Add required modifiers: `.onAppear`, `.handleNavigation`
+  - [ ] Add lifecycle modifiers: `.onAppear` always; `.handleNavigation` only for a `NavigationViewModel` (see Tip 4)
   - [ ] Add preview support
 
 **Template:**
@@ -206,7 +216,7 @@ struct {FeatureName}View: View {
             state: viewModel.state
         )
         .onAppear(perform: viewModel.onAppear)
-        .handleNavigation(viewModel)
+        .handleNavigation(viewModel)   // NavigationViewModel only — drop for a plain BaseViewModel
         .navigationBarHidden(true)
     }
 }
@@ -310,6 +320,6 @@ private struct Content: View {
 - ❌ Not registering ViewModel in `KoinDependencies` for iOS
 - ❌ Forgetting to create the Repository and register it in the DI module
 - ❌ ViewModels calling repositories directly (must use UseCases)
-- ❌ Missing required modifiers in iOS View (`.onAppear`, `.handleNavigation`)
+- ❌ Missing lifecycle modifiers in iOS View (`.onAppear`; `.handleNavigation` when the ViewModel is a `NavigationViewModel`)
 - ❌ Wrong package naming (should use snake_case for feature names)
 - ❌ Hand-writing a `{FeatureName}Strings.kt` with literal strings instead of adding keys to `localization.json`

@@ -33,10 +33,13 @@ Split exactly like iOS's `FeatureView` (lifecycle) / `Content` (UI):
 @Composable
 fun {FeatureName}Screen(navController: NavController) {
     val viewModel: {FeatureName}ViewModel = koinViewModel()
-    val state by viewModel.states.collectAsState()
+    val state by viewModel.states.collectAsStateWithLifecycle()
 
     HandleNavigation(viewModel, navController)   // mirrors iOS .handleNavigation(viewModel)
-    OnLifecycleStart { viewModel.onAppear() }    // mirrors iOS .onAppear(perform:)
+
+    LaunchedEffect(Unit) {                       // mirrors iOS .onAppear(perform:)
+        viewModel.onAppear()
+    }
 
     Content(
         state = state,
@@ -60,8 +63,17 @@ private fun Content(
 Rules:
 - Top-level `Screen`: ViewModel injection + lifecycle **only**. No `COScaffold` here.
 - `Content`: holds `COScaffold` and the UI; receives `state` + callbacks as params.
-- Use `OnLifecycleStart` for `onAppear()`, **not** `LaunchedEffect(Unit)` — it fires
-  after the screen is fully visible (animation done), matching iOS `.onAppear`.
+- Call `onAppear()` from `LaunchedEffect(Unit)`, and collect with
+  `collectAsStateWithLifecycle()` rather than `collectAsState()`.
+
+> **A note on `LaunchedEffect(Unit)`.** It fires when the screen enters composition —
+> effectively the same moment SwiftUI fires `.onAppear` (at transition start, not
+> after the enter animation) — and it re-fires when the screen re-enters composition
+> after back navigation, just as `.onAppear` re-fires when a view reappears. Both are
+> parity with iOS, so don't add delays or one-shot guards to "match" it. If a screen
+> ever genuinely needs fully-visible, post-animation timing, introduce a shared
+> `OnLifecycleStart` helper and switch every screen at once; don't hand-roll one in a
+> single feature.
 
 ## Translation tables
 
@@ -131,16 +143,17 @@ Match iOS's view breakdown. Extract a `private @Composable` when a block exceeds
 Register the screen in `composeApp/src/androidMain/.../app/App.kt`:
 
 ```kotlin
-composable<{FeatureName}> { {FeatureName}Screen(navController = navController) }
+composable<{FeatureName}Scene> { {FeatureName}Screen(navController = navController) }
 ```
 
-The route/`TemplateAppScene` mapping in
-`.../library/navigation/mapToDestination.kt` should already exist from the iOS side.
+The `{FeatureName}Scene` route object is declared in
+`.../library/navigation/mapToDestination.kt` and should already exist from the iOS
+side (`new-kmp-feature` §2.2 explains the mapping and the `Scene` suffix).
 
 ## Verification checklist
 
 - [ ] `Screen` holds only ViewModel + lifecycle; `Content` holds `COScaffold` + UI.
-- [ ] `onAppear()` called via `OnLifecycleStart`; navigation via `HandleNavigation`.
+- [ ] `onAppear()` called via `LaunchedEffect(Unit)`; navigation via `HandleNavigation`.
 - [ ] Layout, spacing, typography, colors, icons use the shared tokens (no hardcoded values).
 - [ ] Component props translated (`onClick` not `action`; direct string access).
 - [ ] Lazy `items(...)` have `key`; bottom buttons use `Alignment.BottomCenter` with matching content padding.
