@@ -15,7 +15,7 @@ These are consumed by SwiftUI `#Preview` blocks and Compose `@Preview` functions
 
 ## Hard rules
 
-1. **No parameters — ever.** Kotlin default arguments do **not** survive the Kotlin→Swift export, so a helper like `previewSingle(title: String = "Hi")` becomes an argument-required, awkward call from Swift. Preview helpers take **zero arguments**. If you need a variant, add another named zero-arg helper (e.g. `previewLongTitle()`, `previewEmpty()`) instead of a parameter with a default.
+1. **No parameters — ever.** Kotlin default arguments do **not** survive the Kotlin→Swift export, so a helper like `previewSingle(title: String = "Hi")` becomes an argument-required, awkward call from Swift. Preview helpers take **zero arguments**. If you need a variant, add another named zero-arg helper (e.g. `previewLongTitle()`, `previewEmpty()`) instead of a parameter with a default. This rule is about the helpers only — defaulted constructor parameters on the State model itself (`val title: String = FeatureStrings.title()`) are the convention and stay; don't "fix" them.
 
 2. **Separate `+Preview` file.** Helpers never live in the same file as the State model. They go in a sibling file named after the model with a `+Preview` suffix:
 

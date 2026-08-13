@@ -188,7 +188,7 @@ val {featureName}Module = module {
   - [ ] Add case: `case .{featureName}: {FeatureName}View()`
 
 #### 2.4 Add Analytics Key (optional – if your project has analytics)
-- [ ] If using analytics, add case to your scene analytics mapping: `TemplateAppScene.{FeatureName} -> "{feature_name}"`
+- [ ] If using analytics, add case to your scene analytics mapping: `is TemplateAppScene.{FeatureName} -> "{feature_name}"`
   - [ ] Use snake_case for the analytics screen ID (e.g., `profile`, `payment_method`)
 
 ### 3. iOS Implementation
@@ -200,7 +200,7 @@ val {featureName}Module = module {
   - [ ] Inject ViewModel: `KoinDependencies().{featureName}ViewModel`
   - [ ] Create private `Content` struct
   - [ ] Add lifecycle modifiers: `.onAppear` always; `.handleNavigation` only for a `NavigationViewModel` (see Tip 4)
-  - [ ] Add preview support
+  - [ ] Add preview support — the `#Preview` builds state through the `+Preview` factory from §1.2 (`.companion.previewSingle()`), never a bare `State(...)` initializer: a sealed `State` has no callable constructor, and a growing one breaks the preview on every added field
 
 **Template:**
 ```swift
@@ -237,7 +237,7 @@ private struct Content: View {
 
 #Preview {
     Content(
-        state: {FeatureName}ViewModel.State()
+        state: .companion.previewSingle()
     )
 }
 ```
@@ -254,6 +254,7 @@ private struct Content: View {
 - [ ] Create `{FeatureName}Screen.kt` composable
 - [ ] Inject ViewModel using Koin
 - [ ] Implement UI using Jetpack Compose
+- [ ] Register the route in `app/App.kt`: `composable<{FeatureName}Scene> { {FeatureName}Screen(navController = navController) }` — the route object comes from §2.2
 
 ### 5. Verification Checklist
 
@@ -267,6 +268,7 @@ private struct Content: View {
 - [ ] Analytics key added (if project uses analytics)
 - [ ] iOS ViewModel registered in `KoinDependencies`
 - [ ] iOS View follows the standard pattern
+- [ ] Android route registered in `App.kt` (if the Android screen was created)
 - [ ] Strings come from `localization.json`, not literals
 - [ ] All TODO comments addressed or documented
 
@@ -309,7 +311,7 @@ private struct Content: View {
 1. **Start with the skeleton**: Create all files with TODO comments first, then implement
 2. **Follow existing patterns**: Look at a recent feature in *this* project for reference — older ones may predate current conventions
 3. **Test incrementally**: After each major step, verify compilation
-4. **Navigation**: For screens that navigate, use `NavigationViewModel` and `navigate(NavigationState)`; use `HandleNavigation(viewModel, navController)` in the UI. For screens that do not navigate, use `BaseViewModel` and do not call `HandleNavigation`.
+4. **Navigation**: For screens that navigate, use `NavigationViewModel` and `navigate(NavigationState)`; in the UI that is `HandleNavigation(viewModel, navController)` on Compose and `.handleNavigation(viewModel)` on SwiftUI. For screens that do not navigate, use `BaseViewModel` and add neither.
 5. **Errors**: a use case's failure modes are a sealed taxonomy in the feature's `domain/`, carrying data only; the error→copy mapping is a named extension in `presentation/` — see `kmp-viewmodel-state`
 
 ## 🚨 Common Mistakes to Avoid
@@ -318,6 +320,7 @@ private struct Content: View {
 - ❌ Missing TemplateAppScene in one of the three locations (shared, Android, iOS)
 - ❌ Forgetting to add analytics key (if project uses analytics)
 - ❌ Not registering ViewModel in `KoinDependencies` for iOS
+- ❌ Mapping the scene in `mapToDestination.kt` but never adding `composable<{FeatureName}Scene>` to `App.kt` — navigating to it then fails at runtime
 - ❌ Forgetting to create the Repository and register it in the DI module
 - ❌ ViewModels calling repositories directly (must use UseCases)
 - ❌ Missing lifecycle modifiers in iOS View (`.onAppear`; `.handleNavigation` when the ViewModel is a `NavigationViewModel`)

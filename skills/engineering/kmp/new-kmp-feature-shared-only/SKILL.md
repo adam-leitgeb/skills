@@ -76,12 +76,12 @@ The frames tell you the presentation layer. Read all of them before writing the
 `State`; a second frame of the same screen is usually a second rendering, not a
 second screen.
 
-**Frames → state shape.** Apply `kmp-viewmodel-state`'s test to each frame: if the
-content isn't on screen (spinner, empty, error), it's a sealed variant; if the
-content is there and only affordances changed (a dimmed button, an inline spinner,
-a validation message under a filled field), it's a status on the content state.
-Disabled/enabled pairs of the same frame are almost always a derived property, not
-a stored `isEnabled`.
+**Frames → state shape.** Classify each frame with `kmp-viewmodel-state`'s boxed
+test — *"While this is true, can the user still see and use the content?"* — a
+spinner or error frame fails it (sealed variant), a dimmed button or inline
+spinner passes it (status on the content state). Disabled/enabled pairs of the
+same frame are a derived property, not a stored `isEnabled` (same skill, "Store
+input, derive presentation").
 
 **Content → fields.** Anything that could differ per user or per load — labels,
 values, counts, avatars, badge text — is a `State` field. Repeated rows become
@@ -111,19 +111,15 @@ single placeholder and nothing else — no layout, no design tokens, no componen
 
 ### iOS — `iosApp/iosApp/Features/{FeatureName}/{FeatureName}View.swift`
 
-Use `new-kmp-feature` §3.1's template verbatim (`@StateViewModel`, `.onAppear`,
-private `Content`, `#Preview`) — its placeholder `Content` body is already exactly
-the placeholder this phase wants, so add nothing to it. Drop `.handleNavigation` if
-the ViewModel is a plain `BaseViewModel` — it only applies to `NavigationViewModel`,
-same as `HandleNavigation` on Android below.
+Use `new-kmp-feature` §3.1's template verbatim — its placeholder `Content` body is
+already exactly the placeholder this phase wants, so add nothing to it. Drop
+`.handleNavigation` if the ViewModel is a plain `BaseViewModel` (`new-kmp-feature`
+Tip 4), same as `HandleNavigation` on Android below.
 
-Once `State` carries more than defaults, the `#Preview` constructs it through a
-`+Preview` factory rather than a bare initializer, so it keeps compiling as the
-state grows. The call conventions — leading-dot inference, the `companion object`
-requirement, where the companion goes on a sealed `State` — live in
-`state-model-preview-helpers`. One thing to do *now*: declare the `companion object`
-when you write the `State` (on the sealed base if it's sealed); nothing else will
-remind you.
+The template's `#Preview` builds state with `.companion.previewSingle()` — the
+factory §2 already created. Don't swap it for a bare `State(...)` initializer: a
+sealed `State` has no callable constructor, and a growing one breaks the preview
+on every added field. Call conventions live in `state-model-preview-helpers`.
 
 Register the ViewModel in `KoinDependencies.kt` (§3.2) — without it the view can't
 resolve and iOS won't build.
@@ -131,9 +127,9 @@ resolve and iOS won't build.
 ### Android — `composeApp/src/androidMain/.../features/{feature_name}/{FeatureName}Screen.kt`
 
 Use the `Screen` half of `android-implementation-from-ios`'s screen-structure
-template as is (injection, `collectAsStateWithLifecycle()`, `HandleNavigation` —
-only if `NavigationViewModel` — and `onAppear()` via `LaunchedEffect(Unit)`),
-passing the state to this placeholder `Content` instead of a real one:
+template as is, with two phase-one adjustments: drop `HandleNavigation` if the
+ViewModel is a plain `BaseViewModel`, and call this placeholder `Content` with
+only the state — drop the `onAction*` arguments the template's `Screen` wires:
 
 ```kotlin
 @Composable
@@ -159,37 +155,45 @@ fields now means rewriting them in phase two.
 ## 4. Verify it builds
 
 Compiling is the deliverable — a scaffold that doesn't build is worse than none.
-One invocation of the project's own wrapper covers both platforms:
-`assembleDebug` compiles the shared module's common and Android halves
-transitively, and the link task runs the Kotlin→Swift export the iOS build needs —
-the ViewModel has to survive it:
+Android first: `assembleDebug` compiles the shared module's common and Android
+halves transitively.
 
 ```bash
-./gradlew :composeApp:assembleDebug :shared:linkDebugFrameworkIosSimulatorArm64
+./gradlew :composeApp:assembleDebug
 ```
 
-Don't reach for `:shared:build` here — it also links release frameworks for every
-iOS target and runs the full test suite, minutes of work that verify nothing about
-a scaffold. Names vary by project: check `settings.gradle.kts` for the real module
-names before assuming `:shared` / `:composeApp`, and `shared/build.gradle.kts` for
-the target that declares `binaries.framework` if the link task is named differently
-(a CocoaPods or XCFramework setup names it differently).
+Then iOS. **If the project has an Xcode scheme, build the app in Xcode** — that is
+the only step that compiles the Swift this skill had you write (the three
+`AppScene*.swift` cases and the placeholder view), and it links the framework
+itself, so the standalone Gradle link task adds nothing on top of it. Run the link
+task on its own **only** when you can't build in Xcode (no scheme, not on macOS);
+it still runs the Kotlin→Swift export the ViewModel has to survive, but it checks
+no Swift:
 
-Then build the Xcode project if the project has a scheme for it. Report what you
-actually ran and what passed; if a build fails for a reason outside the feature
-(missing SDK, unrelated breakage), say so rather than declaring success.
+```bash
+./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
+```
 
-Two export traps surface only at this step:
+Don't reach for `:shared:build` in either case — it also links release frameworks
+for every iOS target and runs the full test suite, minutes of work that verify
+nothing about a scaffold. If a task name doesn't resolve, check
+`settings.gradle.kts` for the real module names and `shared/build.gradle.kts` for
+the target that declares `binaries.framework` — a CocoaPods or XCFramework setup
+names the link task differently.
 
-- **Status types belong at top level** — nested inside `State` they sit past the one
-  level of class nesting the Swift export preserves, so they flatten into a
-  concatenated name; declared top level in the presentation package they stay
-  `OtpSendStatus.Failed` (`kmp-viewmodel-state`, "Status"). `{FeatureName}ViewModel.State`
-  itself is one level deep, keeps its dotted path, and is fine.
-- **Preview helpers take no parameters** — defaults on a `previewX()` don't survive
-  the export (`state-model-preview-helpers`, hard rule 1). This is about the
-  helpers only: defaulted constructor params on `State` itself are the convention
-  here and stay (`val title: String = FeatureStrings.title()`). Don't "fix" them.
+Report what you actually ran and what passed, and say which iOS path you took; if
+a build fails for a reason outside the feature (missing SDK, unrelated breakage),
+say so rather than declaring success.
+
+Two export rules to re-check at this step:
+
+- **Status types belong at top level** — nested inside `State` or the ViewModel
+  they flatten into a concatenated name in Swift; top level they stay
+  `SubmitStatus.Failed`. The mechanism — and why `{FeatureName}ViewModel.State`
+  itself is fine — is `kmp-viewmodel-state`, "Status".
+- **Preview helpers take no parameters** — and the deliberate flip side: defaulted
+  constructor params on `State` itself are the convention and stay. Both halves
+  are `state-model-preview-helpers`, hard rule 1.
 
 ## 5. Hand off
 
@@ -199,10 +203,8 @@ Close with a short summary, not a wall of text:
   line each, plus any ambiguity you resolved by choosing. This is the part worth
   checking; everything below it is mechanical.
 - **Created** — the shared files, grouped by layer.
-- **Registered** — `featureModule.kt`, the scene in `AppScene.kt`, `mapToDestination.kt`
-  (`when` case + `@Serializable object {FeatureName}Scene`), the three iOS
-  `AppScene*.swift` files, `KoinDependencies`, `App.kt`, analytics (if the project
-  has it).
+- **Registered** — every registration site from `new-kmp-feature` (§1.7, §2, §3.2,
+  and the `App.kt` route from §4.1), confirmed by name.
 - **Left open** — every `TODO` you planted, and the copy still missing from
   `localization.json`.
 - **Next** — the two placeholder views to replace, by path.
@@ -217,11 +219,9 @@ Phase two is `ios-swiftui-patterns` for the iOS screen, then
 - [ ] Visible copy stored on `State` with keys in `localization.json`, namespace registered in `localizationNamespaces`
 - [ ] `State` (or its sealed base) declares `companion object`; Swift previews call `.companion.previewX()`
 - [ ] No spacing/color/typography leaked into shared code
-- [ ] Shared feature complete per `new-kmp-feature` §1 — nothing stubbed that the request specified
-- [ ] `State` shaped per `kmp-viewmodel-state`; `+Preview` factories exist
-- [ ] Scene registered in shared, Android, and all three iOS files; analytics key added (if the project uses analytics)
-- [ ] ViewModel in `KoinDependencies`; module in `featureModule.kt`
+- [ ] Shared feature complete per `new-kmp-feature` §1, `State` shaped per `kmp-viewmodel-state` — nothing stubbed that the request specified
+- [ ] Every registration done — `new-kmp-feature`'s §5 verification checklist passes
 - [ ] iOS view: lifecycle modifiers present (`.handleNavigation` iff `NavigationViewModel`), `Content` still a placeholder
 - [ ] Android screen: registered in `App.kt`, `Content` still a placeholder
 - [ ] Neither placeholder reads `state` fields
-- [ ] Gradle + iOS link verified, results reported honestly
+- [ ] `:composeApp:assembleDebug` passed, plus the iOS side — Xcode build, or the link task alone where Xcode isn't available — and which path you took is reported

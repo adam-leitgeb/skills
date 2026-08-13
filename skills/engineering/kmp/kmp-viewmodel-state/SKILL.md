@@ -81,14 +81,13 @@ ViewModel. Top level it stays `SubmitStatus.Failed` in Swift; nested inside `Sta
 it reaches Swift as a flattened concatenation
 (`{FeatureName}ViewModelStateSubmitStatusFailed`).
 
-> **How Kotlin types actually reach Swift.** The Obj-C export preserves **one level**
-> of class nesting — `{FeatureName}ViewModel.State` keeps its dotted path, which is
-> what the SwiftUI `Content` struct declares. Anything nested deeper flattens into
-> one concatenated name. Members of a *sealed interface* flatten at any depth: an
-> interface exports as an Obj-C protocol, which cannot nest types, so
-> `TemplateAppScene.Initial` arrives as `TemplateAppSceneInitial` — which is why
-> `AppScene+Convertible.swift` matches on `case is TemplateAppSceneInitial`. Keep
-> status types top level and none of this matters.
+> **Why.** The Obj-C export preserves **one level** of class nesting —
+> `{FeatureName}ViewModel.State` keeps its dotted path, which is what the SwiftUI
+> `Content` struct declares — and flattens anything deeper (a status inside `State`
+> or the ViewModel puts its members at depth two). Members of a *sealed interface*
+> flatten at any depth: an interface exports as an Obj-C protocol, which cannot
+> nest types, so `TemplateAppScene.Initial` arrives as `TemplateAppSceneInitial` —
+> which is why `AppScene+Convertible.swift` matches on `case is TemplateAppSceneInitial`.
 
 ### Both together
 
