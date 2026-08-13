@@ -155,29 +155,35 @@ fields now means rewriting them in phase two.
 ## 4. Verify it builds
 
 Compiling is the deliverable — a scaffold that doesn't build is worse than none.
-One invocation of the project's own wrapper covers both platforms:
-`assembleDebug` compiles the shared module's common and Android halves
-transitively, and the link task runs the Kotlin→Swift export the iOS build needs —
-the ViewModel has to survive it:
+Android first: `assembleDebug` compiles the shared module's common and Android
+halves transitively.
 
 ```bash
-./gradlew :composeApp:assembleDebug :shared:linkDebugFrameworkIosSimulatorArm64
+./gradlew :composeApp:assembleDebug
 ```
 
-Don't reach for `:shared:build` here — it also links release frameworks for every
-iOS target and runs the full test suite, minutes of work that verify nothing about
-a scaffold. If a task name doesn't resolve, check `settings.gradle.kts` for the
-real module names and `shared/build.gradle.kts` for the target that declares
-`binaries.framework` — a CocoaPods or XCFramework setup names the link task
-differently.
+Then iOS. **If the project has an Xcode scheme, build the app in Xcode** — that is
+the only step that compiles the Swift this skill had you write (the three
+`AppScene*.swift` cases and the placeholder view), and it links the framework
+itself, so the standalone Gradle link task adds nothing on top of it. Run the link
+task on its own **only** when you can't build in Xcode (no scheme, not on macOS);
+it still runs the Kotlin→Swift export the ViewModel has to survive, but it checks
+no Swift:
 
-Then build the iOS app with Xcode — it is the only step that compiles the Swift
-this skill had you write (the three `AppScene*.swift` cases and the placeholder
-view); the link task checks only the Kotlin export. When you do run the Xcode
-build, the standalone `:shared:link...` task is redundant — Xcode links the
-framework itself. Report what you actually ran and what passed; if a build fails
-for a reason outside the feature (missing SDK, unrelated breakage), say so rather
-than declaring success.
+```bash
+./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
+```
+
+Don't reach for `:shared:build` in either case — it also links release frameworks
+for every iOS target and runs the full test suite, minutes of work that verify
+nothing about a scaffold. If a task name doesn't resolve, check
+`settings.gradle.kts` for the real module names and `shared/build.gradle.kts` for
+the target that declares `binaries.framework` — a CocoaPods or XCFramework setup
+names the link task differently.
+
+Report what you actually ran and what passed, and say which iOS path you took; if
+a build fails for a reason outside the feature (missing SDK, unrelated breakage),
+say so rather than declaring success.
 
 Two export rules to re-check at this step:
 
@@ -218,4 +224,4 @@ Phase two is `ios-swiftui-patterns` for the iOS screen, then
 - [ ] iOS view: lifecycle modifiers present (`.handleNavigation` iff `NavigationViewModel`), `Content` still a placeholder
 - [ ] Android screen: registered in `App.kt`, `Content` still a placeholder
 - [ ] Neither placeholder reads `state` fields
-- [ ] Gradle + iOS link verified, results reported honestly
+- [ ] `:composeApp:assembleDebug` passed, plus the iOS side — Xcode build, or the link task alone where Xcode isn't available — and which path you took is reported

@@ -268,6 +268,7 @@ private struct Content: View {
 - [ ] Analytics key added (if project uses analytics)
 - [ ] iOS ViewModel registered in `KoinDependencies`
 - [ ] iOS View follows the standard pattern
+- [ ] Android route registered in `App.kt` (if the Android screen was created)
 - [ ] Strings come from `localization.json`, not literals
 - [ ] All TODO comments addressed or documented
 
@@ -319,6 +320,7 @@ private struct Content: View {
 - ❌ Missing TemplateAppScene in one of the three locations (shared, Android, iOS)
 - ❌ Forgetting to add analytics key (if project uses analytics)
 - ❌ Not registering ViewModel in `KoinDependencies` for iOS
+- ❌ Mapping the scene in `mapToDestination.kt` but never adding `composable<{FeatureName}Scene>` to `App.kt` — navigating to it then fails at runtime
 - ❌ Forgetting to create the Repository and register it in the DI module
 - ❌ ViewModels calling repositories directly (must use UseCases)
 - ❌ Missing lifecycle modifiers in iOS View (`.onAppear`; `.handleNavigation` when the ViewModel is a `NavigationViewModel`)

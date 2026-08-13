@@ -57,9 +57,10 @@ the ViewModel's `init` — see `kmp-viewmodel-state`. `Content` therefore usuall
 ```
 
 ### Required ViewModel Modifiers
-Every feature view includes `.onAppear`; add `.handleNavigation(viewModel)` only
-when the ViewModel is a `NavigationViewModel` — a plain `BaseViewModel` screen
-takes neither navigation wiring (see `new-kmp-feature` Tip 4):
+Every feature view includes `.onAppear` — always, whatever the ViewModel. Add
+`.handleNavigation(viewModel)` on top of it only when the ViewModel is a
+`NavigationViewModel`; a plain `BaseViewModel` screen keeps `.onAppear` and gets
+no navigation modifier (see `new-kmp-feature` Tip 4):
 ```swift
 .onAppear(perform: viewModel.onAppear)
 .handleNavigation(viewModel)   // NavigationViewModel only
