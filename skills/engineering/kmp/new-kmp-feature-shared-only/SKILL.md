@@ -26,7 +26,9 @@ attached, ask whether there are any before scaffolding from prose, but don't blo
 a described feature scaffolds fine, just with more `TODO`s.
 
 Derive, per `new-kmp-feature`'s naming table:
-- `{feature_name}` — snake_case directory / package segment
+- `{feature_name}` — snake_case directory / package segment; entity-first with
+  the CRUD role as a suffix (`event_list`), singular, never verb-first — see
+  `kotlin-multiplatform-architecture`
 - `{FeatureName}` — PascalCase class prefix
 - `{featureName}` — camelCase DI module and Koin property
 

@@ -28,8 +28,13 @@ lives in its own skill, so each rule has one home:
 ## 📋 Prerequisites
 
 Before starting, decide on:
-- **Feature name**: Use snake_case (e.g., `profile`, `payment_method`)
-- **Feature display name**: PascalCase for classes (e.g., `Profile`, `PaymentMethod`)
+- **Feature name**: snake_case, entity-first with the CRUD role as a suffix —
+  `event_list`, `event_detail`, `payment_method_create`. Never verb-first. A
+  screen with no CRUD role just names the screen (`onboarding`, `settings`).
+  The entity stays singular. Full rule: `kotlin-multiplatform-architecture`.
+- **Feature display name** (`{FeatureName}`): PascalCase of the **full** feature name,
+  role suffix included — `event_list` → `EventList`, `payment_method_create` →
+  `PaymentMethodCreate`. Every `{FeatureName}…` derivation below uses it.
 - **Package path**: `{package}.features.{feature_name}` — `{package}` is a placeholder
   for **the project's own root package**; read it from any existing source file and use
   it verbatim (never a hardcoded vendor package).
@@ -44,7 +49,9 @@ Before starting, decide on:
   - [ ] `di/` - Dependency injection module
   - [ ] `domain/` - Use cases
   - [ ] `presentation/` - ViewModels, state models, preview factories
-  - [ ] `data/` - Repository
+  - [ ] `data/` - Repository, when it is this feature's own. A repository or
+        domain model the common layer or several features need belongs in the
+        shared `data/` / `domain/` beside `features/` instead.
   - [ ] `model/` - Feature-specific models (if needed)
 
 #### 1.2 Create ViewModel
@@ -95,13 +102,25 @@ sealed class {FeatureName}UseCaseImpl: {FeatureName}UseCase {
 }
 ```
 
-#### 1.5 Create Repository
-- [ ] Create `data/{FeatureName}Repository.kt`
-  - [ ] Define `interface {FeatureName}Repository`
-  - [ ] Create `class {FeatureName}RepositoryImpl : {FeatureName}Repository`
-  - [ ] Add MARK comments: Properties, Methods
+#### 1.5 Create Repository (if the feature needs one)
 
-**Template:**
+Decide where it lives before writing it:
+
+- **This feature's own** → `features/{feature_name}/data/{FeatureName}Repository.kt`,
+  registered `single` in the feature's own module (§1.6).
+- **Needed by the common layer, or by several features** → the shared `data/repository/`
+  beside `features/`. Name it for the bare entity with **no role suffix**, and register
+  it in the shared data module that `registerSharedModules()` already aggregates —
+  **not** in a feature module. A feature module owning it makes the common layer depend
+  on a feature. Read the project's existing shared tree to confirm the sub-path and the
+  module that owns it; don't assume.
+
+- [ ] Define `interface {FeatureName}Repository`
+- [ ] Create `class {FeatureName}RepositoryImpl : {FeatureName}Repository`
+- [ ] Add MARK comments: Properties, Methods
+
+**Template** — the feature-own case. For the shared case, swap the package for the
+project's shared repository package and drop the role suffix from the name.
 ```kotlin
 package {package}.features.{feature_name}.data
 
@@ -123,7 +142,9 @@ class {FeatureName}RepositoryImpl: {FeatureName}Repository {
 
 #### 1.6 Create DI Module
 - [ ] Create `di/{featureName}Module.kt`
-  - [ ] Register repository as `single<{FeatureName}Repository> { {FeatureName}RepositoryImpl() }`
+  - [ ] Register repository as `single<{FeatureName}Repository> { {FeatureName}RepositoryImpl() }` —
+        **only if it is this feature's own**; a promoted one is registered in the shared
+        data module instead (§1.5)
   - [ ] Register use cases as `factory<{FeatureName}UseCase.{UseCaseName}> { {FeatureName}UseCaseImpl.{UseCaseName}(...) }`
   - [ ] Register ViewModel as `factory { {FeatureName}ViewModel(...) }`
 
@@ -261,8 +282,8 @@ private struct Content: View {
 - [ ] All files compile without errors
 - [ ] ViewModel extends `BaseViewModel<State>` or `NavigationViewModel<State>` (if screen uses navigation)
 - [ ] State implements `ViewModelState`
-- [ ] Repository interface and implementation created
-- [ ] Repository registered as `single` in DI module
+- [ ] Repository created, if the feature needs one
+- [ ] Repository registered as `single` — in the feature module if feature-own, in the shared data module if promoted
 - [ ] DI module registered in `featureModule.kt`
 - [ ] TemplateAppScene added to all three locations (shared, Android, iOS)
 - [ ] Analytics key added (if project uses analytics)
@@ -276,23 +297,25 @@ private struct Content: View {
 
 | Type | Convention | Example |
 |------|-----------|---------|
-| Feature directory | snake_case | `profile`, `payment_method` |
-| Feature class names | PascalCase | `Profile`, `PaymentMethod` |
-| ViewModel | `{FeatureName}ViewModel` | `ProfileViewModel` |
-| UseCase | `{FeatureName}UseCase` | `ProfileUseCase` |
-| Repository | `{FeatureName}Repository` | `ProfileRepository` |
-| DI Module | `{featureName}Module` | `profileModule` |
-| State | `State` (nested) | `ProfileViewModel.State` |
+| Feature directory | snake_case, entity-first, singular, role suffix | `event_list`, `payment_method_create` |
+| Feature class prefix `{FeatureName}` | PascalCase of the **full** folder name, role suffix included | `EventList`, `PaymentMethodCreate` |
+| ViewModel | `{FeatureName}ViewModel` | `EventListViewModel` |
+| UseCase | `{FeatureName}UseCase` | `EventListUseCase` |
+| Repository (feature-own) | `{FeatureName}Repository` | `EventListRepository` |
+| Repository (promoted to shared `data/`) | `{Entity}Repository` — no role suffix | `EmergencyContactRepository` |
+| DI Module | `{featureName}Module` | `eventListModule` |
+| State | `State` (nested) | `EventListViewModel.State` |
 | Action methods | `on{ActionName}()` | `onTapContinue()`, `onSelectItem()` |
-| iOS View | `{FeatureName}View` | `ProfileView` |
-| Package | `{package}.features.{feature_name}` | `{package}.features.profile` |
+| iOS View | `{FeatureName}View` | `EventListView` |
+| Package | `{package}.features.{feature_name}` | `{package}.features.event_list` |
 
 ## 🔍 Quick Reference: File Locations
 
 ### Shared Module
 - ViewModel: `shared/src/commonMain/kotlin/.../features/{feature_name}/presentation/{FeatureName}ViewModel.kt`
 - UseCase: `shared/src/commonMain/kotlin/.../features/{feature_name}/domain/{FeatureName}UseCase.kt`
-- Repository: `shared/src/commonMain/kotlin/.../features/{feature_name}/data/{FeatureName}Repository.kt`
+- Repository (feature-own): `shared/src/commonMain/kotlin/.../features/{feature_name}/data/{FeatureName}Repository.kt`
+- Repository (shared): `shared/src/commonMain/kotlin/.../data/repository/{Entity}Repository.kt` — confirm the sub-path against the project's tree
 - DI Module: `shared/src/commonMain/kotlin/.../features/{feature_name}/di/{featureName}Module.kt`
 - Feature Modules: `shared/src/commonMain/kotlin/.../features/featureModule.kt`
 - Scenes: `shared/src/commonMain/kotlin/.../application/AppScene.kt`
@@ -321,8 +344,9 @@ private struct Content: View {
 - ❌ Forgetting to add analytics key (if project uses analytics)
 - ❌ Not registering ViewModel in `KoinDependencies` for iOS
 - ❌ Mapping the scene in `mapToDestination.kt` but never adding `composable<{FeatureName}Scene>` to `App.kt` — navigating to it then fails at runtime
-- ❌ Forgetting to create the Repository and register it in the DI module
+- ❌ Forgetting to register the Repository as `single` wherever it ended up living
 - ❌ ViewModels calling repositories directly (must use UseCases)
 - ❌ Missing lifecycle modifiers in iOS View (`.onAppear`; `.handleNavigation` when the ViewModel is a `NavigationViewModel`)
-- ❌ Wrong package naming (should use snake_case for feature names)
+- ❌ Naming a feature verb-first (`create_event`) or plural (`events`) instead of `event_create` / `event_list`
+- ❌ Putting a repository every feature needs inside one feature instead of the shared `data/`
 - ❌ Hand-writing a `{FeatureName}Strings.kt` with literal strings instead of adding keys to `localization.json`
