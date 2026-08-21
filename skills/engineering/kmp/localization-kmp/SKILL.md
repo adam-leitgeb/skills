@@ -77,6 +77,12 @@ segments use snake_case.
 - **First segment = namespace** → selects the target package + object via the
   **namespace registry** (`localizationNamespaces` in `shared/build.gradle.kts`). Both
   vary per namespace, so the registry is required. Add an entry for any new namespace.
+  A feature's namespace is its folder name exactly, so it follows the feature naming
+  rule in `kotlin-multiplatform-architecture`. Renaming a feature therefore changes five
+  things together: the key prefixes in the JSON, and the registry entry's namespace key,
+  target package **and** object name, plus every `XxxStrings` call site. Miss the target
+  package and the shared module fails on unresolved references — the generated object
+  itself is never edited by hand, it only exists as that registry entry.
 - **Remaining segments → function name**, lowerCamelCase: every `.`/`_` boundary becomes
   a camelCase hump (`profile.list.add_button` → `listAddButton`).
 - **Placeholders** use positional `%1$s` (→ `String` param) / `%1$d` (→ `Int` param) in

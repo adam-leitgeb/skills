@@ -27,7 +27,7 @@ user-invocable: false
   duplicate those rules here.
 
 ### Dependency Injection (Koin)
-- Each feature should have its own DI module (e.g., `selectCountryModule`)
+- Each feature should have its own DI module (e.g., `countryListModule`)
 - ViewModels should be registered as `factory` instances
 - Repository implementations should be bound to their interfaces
 - Group modules logically in `registerSharedModules()`
@@ -48,11 +48,39 @@ features/feature_name/
     └── FeatureNameRepository.kt
 ```
 
+### Shared Code Outside Features
+`data/` and `domain/` also exist as siblings of `features/`, with the same internal
+layout the feature layers use — repositories under `data/repository/`, models and
+shared use cases under `domain/`. Read the existing tree before placing a file. That
+is where code belongs once it is no longer one feature's own — a repository or domain model
+that several features use, or that non-feature code such as a sign-out use case
+depends on. Leaving it inside a feature makes the common layer depend on a
+feature, which inverts the dependency direction.
+
+Judge this case by case. A repository only one feature reads may stay in that
+feature even when another screen calls it. Promote it when the common layer
+needs it, or when several features do.
+
+### Feature Naming
+- Feature folders are snake_case and **entity-first, with the CRUD role as a
+  suffix**: `event_list`, `event_detail`, `emergency_contact_create`. Never
+  verb-first — `create_event` sorts one entity's screens to opposite ends of the
+  tree.
+- The role suffix comes from a closed set: `list`, `detail`, `create`, `edit`,
+  `delete`. Don't coin synonyms — `edit`, never `update`. The suffix also becomes
+  the localization namespace, so correcting a synonym later is a rename across the
+  folder, the DI module, the JSON keys and the codegen registry — not a folder move.
+- A screen with no CRUD role just names the screen: `onboarding`,
+  `otp_verification`, `settings`.
+- The entity is **singular** in folder and type names, even when it holds many:
+  `event_list`, `EventPage`, `EmergencyContactRepository`. Plural survives only
+  in verb phrases that act on many, and in database table names.
+
 ### Package Naming
 - **Always use the project's own root package** (reverse-domain notation) — read it
   from any existing source file; never hardcode a vendor package. Throughout these
   skills `{package}` stands in for that actual root.
-- Feature packages should use snake_case (e.g., `select_country`)
+- Feature packages should use snake_case (e.g., `country_list`)
 - Class names should use PascalCase
 
 ## 🔧 Code Conventions
@@ -81,6 +109,12 @@ features/feature_name/
 - DI Modules: `featureNameModule`
 - State classes: `State` (nested in ViewModel)
 - Action methods: `onActionName()` (e.g., `onTapContinue()`, `onSelectCountry()`)
+
+A UseCase or Repository **inside a feature folder** carries the full feature
+name, role suffix included — `event_list/` holds `EventListUseCase` and
+`EventListRepository`. Once promoted to the shared `data/` or `domain/`, it
+drops the role and keeps the bare entity: `EmergencyContactRepository`. The name
+then tells you which layer it lives in.
 
 ## 🔄 Data Flow
 
