@@ -125,6 +125,9 @@ Use standardized corner radius constants from `CGFloat+CornerRadius.swift`:
 - **Text Fields**: Use `COTextField` with value binding and callback
 - **Loading States**: Built into components (e.g., `COPrimaryButton` has `isLoading` parameter)
 - **Feedback**: Use `UIImpactFeedbackGenerator` for button interactions
+- **Tappable rows**: Apply `.onTapWithHighlight(action:)` to the row's content. Do not
+  wrap a row in a `Button` (with `.buttonStyle(.plain)`, `.contentShape`, and the rest) —
+  the modifier is the house pattern and carries the press highlight.
 
 ## 🔧 Error Handling
 
