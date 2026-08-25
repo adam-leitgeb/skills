@@ -248,6 +248,15 @@ and a sealed `State` has no callable constructor (see `state-model-preview-helpe
 
 ## 📝 Code Style
 
+### Comments
+Write no comments by default. Code must be self-explanatory through its
+declarations, structure, and architecture — if a block needs a comment to be
+understood, rename or restructure it instead. A comment is justified only in the
+rare case where the code cannot carry the meaning itself: non-obvious business
+logic or genuinely atypical UI code (a workaround, a layout quirk). Such a
+comment explains *why*, never *what* the code does. MARK comments (below) are
+organization, not commentary — keep using them.
+
 ### MARK Comments
 Use MARK comments to organize code sections:
 ```swift
