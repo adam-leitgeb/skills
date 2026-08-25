@@ -150,18 +150,8 @@ then tells you which layer it lives in.
 - **iOS (SwiftUI)**: Only top-level screen views use the "View" suffix (e.g., `LearnView`, `HomeView`). Sub-views and components do not use the suffix (e.g., `TipsSection`, `PracticeSection`).
 - **Android (Compose)**: Only top-level screen composables use the "Screen" suffix (e.g., `LearnScreen`, `HomeScreen`). Sub-composables and components do not use the suffix (e.g., `TipsSection`, `PracticeSection`).
 
-## 📝 Comments & Documentation
-- Write no comments by default. Code must be self-explanatory through its
-  declarations, structure, and architecture — if a block needs a comment to be
-  understood, rename or restructure it instead. This applies to all Kotlin,
-  shared and Android alike.
-- A comment is justified only in the rare case where the code cannot carry the
-  meaning itself: non-obvious business logic (a domain rule, a product or legal
-  constraint) or genuinely atypical UI code (a workaround, a platform quirk).
-  Such a comment explains *why*, never *what* the code does.
-- `// MARK: -` section markers are organization, not commentary — keep using them.
-- KDoc is held to the same bar: only where a public API's contract isn't clear
-  from its signature and naming.
+## 📝 Documentation
+- Comments and KDoc: none by default — the rule and its carve-outs live in `code-comments`
 - Keep README updated with architecture decisions
 
 ## 🎨 Code Formatting
