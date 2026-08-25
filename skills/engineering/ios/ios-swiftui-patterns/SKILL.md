@@ -248,6 +248,10 @@ and a sealed `State` has no callable constructor (see `state-model-preview-helpe
 
 ## 📝 Code Style
 
+### Comments
+None by default — the rule and its carve-outs (MARK markers, `///` doc
+comments) live in `code-comments`.
+
 ### MARK Comments
 Use MARK comments to organize code sections:
 ```swift

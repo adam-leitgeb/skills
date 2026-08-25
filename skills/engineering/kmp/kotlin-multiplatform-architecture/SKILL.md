@@ -151,9 +151,7 @@ then tells you which layer it lives in.
 - **Android (Compose)**: Only top-level screen composables use the "Screen" suffix (e.g., `LearnScreen`, `HomeScreen`). Sub-composables and components do not use the suffix (e.g., `TipsSection`, `PracticeSection`).
 
 ## 📝 Documentation
-- Use KDoc for public APIs
-- MARK comments for code organization (iOS/Swift style)
-- Inline comments for complex business logic
+- Comments and KDoc: none by default — the rule and its carve-outs live in `code-comments`
 - Keep README updated with architecture decisions
 
 ## 🎨 Code Formatting

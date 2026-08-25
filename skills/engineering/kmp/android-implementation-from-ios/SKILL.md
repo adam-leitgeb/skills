@@ -136,7 +136,9 @@ Match iOS's view breakdown. Extract a `private @Composable` when a block exceeds
 - Sections → `{Name}Section` (e.g. `HeaderSection`)
 - Rows/items → `{Name}Row` (e.g. `MistakeRow`)
 - Helpers → descriptive (e.g. `VerticalDivider`)
-- Group with `// MARK: -` comments, matching the iOS file's organization.
+- Group with `// MARK: -` comments, matching the iOS file's organization. No other
+  comments — `code-comments` applies, judged against the Kotlin code (don't mirror
+  iOS comments that don't meet it).
 
 ## Navigation
 
