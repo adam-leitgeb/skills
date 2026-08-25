@@ -20,6 +20,7 @@ lives in its own skill, so each rule has one home:
 | SwiftUI view structure | `ios-swiftui-patterns` |
 | Unit tests | `android-unittest-structure` |
 | Comments and doc comments | `code-comments` |
+| View/Screen suffixes, action naming, MARK sections | `ui-conventions` |
 
 > This checklist builds the whole feature in one pass. When the shared half is being
 > built first from design screenshots and the UI follows later, the user invokes
