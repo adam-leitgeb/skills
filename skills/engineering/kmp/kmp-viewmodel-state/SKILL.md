@@ -290,11 +290,7 @@ Existing throwing use cases are fine; migrate only with a reason.
 - `State` is nested in the ViewModel and implements `ViewModelState`; sealed status
   types are top level in the same presentation package.
 - Update with `state = state.copy(...)` — state is always immutable.
-- Action methods are `onXxx()` and take only what the UI knows
-  (`onSelectRow(id: String)`, not `onSelectRow(row: RowState)`).
-- `// MARK: -` sections are **topical, not a fixed set**. `Properties`,
-  `Initialization`, `Actions` and `Helpers` are the common ones; split further when
-  a ViewModel earns it (`State builders`, `Loading`, `Observers`, `Analytics`).
+- Action naming and `// MARK: -` section sets: the rules live in `ui-conventions`.
 
 ## Smells
 

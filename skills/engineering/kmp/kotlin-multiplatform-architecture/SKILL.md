@@ -99,7 +99,7 @@ needs it, or when several features do.
 
 ### ViewModel Structure
 - Use `viewModelScope.launch` for coroutines
-- Organize with `// MARK: -` sections (topical, not a fixed set)
+- Organize with `// MARK: -` sections — the section sets live in `ui-conventions`
 - State shape, status modelling and error handling: see `kmp-viewmodel-state`
 
 ### Naming Conventions
@@ -108,7 +108,7 @@ needs it, or when several features do.
 - Repositories: `FeatureNameRepository` (interface) and `FeatureNameRepositoryImpl`
 - DI Modules: `featureNameModule`
 - State classes: `State` (nested in ViewModel)
-- Action methods: `onActionName()` (e.g., `onTapContinue()`, `onSelectCountry()`)
+- Action methods: `onActionName()` — the rule lives in `ui-conventions`
 
 A UseCase or Repository **inside a feature folder** carries the full feature
 name, role suffix included — `event_list/` holds `EventListUseCase` and
@@ -147,8 +147,7 @@ then tells you which layer it lives in.
 - Platform-specific implementations in androidMain/iosMain
 
 ### View Naming Conventions
-- **iOS (SwiftUI)**: Only top-level screen views use the "View" suffix (e.g., `LearnView`, `HomeView`). Sub-views and components do not use the suffix (e.g., `TipsSection`, `PracticeSection`).
-- **Android (Compose)**: Only top-level screen composables use the "Screen" suffix (e.g., `LearnScreen`, `HomeScreen`). Sub-composables and components do not use the suffix (e.g., `TipsSection`, `PracticeSection`).
+- View/Screen suffixes (top-level screens only): the rule lives in `ui-conventions`
 
 ## 📝 Documentation
 - Comments and KDoc: none by default — the rule and its carve-outs live in `code-comments`

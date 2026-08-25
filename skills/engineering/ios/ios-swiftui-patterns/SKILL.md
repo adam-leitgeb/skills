@@ -253,14 +253,8 @@ None by default — the rule and its carve-outs (MARK markers, `///` doc
 comments) live in `code-comments`.
 
 ### MARK Comments
-Use MARK comments to organize code sections:
-```swift
-// MARK: - Properties
-// MARK: - Body
-// MARK: - Private Views
-// MARK: - Actions
-// MARK: - Previews
-```
+Organize code with `// MARK: -` sections — the conventional sets per file kind
+live in `ui-conventions`.
 
 ### ViewBuilder Usage
 - Use `@ViewBuilder` for conditional view logic
@@ -268,9 +262,9 @@ Use MARK comments to organize code sections:
 - Extract complex views into private computed properties
 
 ### Naming Conventions
-- **Views**: `FeatureNameView`
+- **Views**: "View" suffix on top-level screens only — the rule lives in `ui-conventions`
 - **Components**: `COComponentName`
-- **Actions**: `onActionName` (e.g., `onTapContinue`, `onEmailChanged`)
+- **Actions**: `onActionName` — the rule lives in `ui-conventions`
 - **State Properties**: Use descriptive names matching ViewModel state
 - **Private Views**: Use descriptive computed property names
 
