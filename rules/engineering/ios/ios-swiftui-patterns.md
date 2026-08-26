@@ -102,9 +102,13 @@ default:
 ## 🎨 Design System
 
 ### Component Naming Convention
-- All custom components prefixed with `CO` (e.g., `COPrimaryButton`, `COTextField`)
-- Components are reusable across features
-- Located in `iosApp/Library/Design/`
+- Design-system components live in `iosApp/Library/Design/` — location, not a
+  name prefix, is what marks a component as shared across features.
+- Projects whose design library already uses the `CO` prefix (`COPrimaryButton`,
+  `COTextField`) keep it, and new components in such a library follow suit for
+  consistency — a grandfathered exception to `swift-code-style`'s
+  no-type-prefix rule.
+- In projects without the prefix, don't introduce one.
 
 ### Spacing System
 Use standardized spacing constants from `CGFloat+Spacing.swift`:
@@ -245,6 +249,11 @@ and a sealed `State` has no callable constructor (see `state-model-preview-helpe
 
 ## 📝 Code Style
 
+### General
+Formatting, optionals, and everything not covered here follow
+`swift-code-style` (Google's Swift Style Guide with the house deviations
+listed there).
+
 ### Comments
 None by default — the rule and its carve-outs (MARK markers, `///` doc
 comments) live in `code-comments`.
@@ -260,8 +269,10 @@ live in `ui-conventions`.
 
 ### Naming Conventions
 - **Views**: "View" suffix on top-level screens only — the rule lives in `ui-conventions`
-- **Components**: `COComponentName`
-- **Actions**: `onActionName` — the rule lives in `ui-conventions`
+- **Components**: no prefix by default; `CO` only in libraries that already
+  use it (see Component Naming Convention above)
+- **Actions**: platform-split — Swift methods follow Apple conventions,
+  closures keep `on`; the rule lives in `ui-conventions`
 - **State Properties**: Use descriptive names matching ViewModel state
 - **Private Views**: Use descriptive computed property names
 

@@ -10,10 +10,15 @@ This governs the code you are writing or changing. Renaming or restructuring
 is the preferred alternative to a comment **within that change**; it is not a
 license to strip comments or rename things in code you weren't asked to touch.
 
-Doc comments (KDoc, Swift `///`) have their own bar: only where a public API's
-contract isn't clear from its signature and naming. Shared-module KDoc is what
-iOS callers see in Xcode Quick Help, so a genuinely unclear contract is worth
-documenting — a restatement of the name is not.
+Doc comments (KDoc, Swift `///`) split by visibility. Every `open` or
+`public` declaration, and every open or public member of one, gets a doc
+comment — that surface is consumed without reading the source (this adopts
+Google's Swift Style Guide requirement; see `swift-code-style`). Shared-module
+KDoc is likewise what iOS callers see in Xcode Quick Help. Say what the
+signature can't — a doc comment that restates the name is noise, and fixing
+the name is the better move. For `internal` and below the no-comments default
+holds: the contract must be clear from signature and naming, and a doc
+comment is justified only where it genuinely can't be.
 
 Outside this rule's scope — keep writing these where other skills call for them:
 
