@@ -82,6 +82,20 @@ get_globs() {
   ' "$1"
 }
 
+# `paths:` is Cursor-only — it feeds the generated rule's `globs:` above. Claude Code
+# rejects a SKILL.md whose frontmatter carries it: the skill is dropped from the model's
+# skill list entirely, so the convention silently never applies. Strip it on the way in.
+strip_paths() {
+  awk '
+    NR==1 && /^---[[:space:]]*$/ { fm=1; print; next }
+    fm && /^---[[:space:]]*$/    { fm=0; print; next }
+    fm && /^paths:[[:space:]]*$/ { skip=1; next }
+    fm && skip && /^[[:space:]]+-/ { next }
+    fm && skip { skip=0 }
+    { print }
+  ' "$1"
+}
+
 # --- install selected skills ---------------------------------------------
 declare -a INSTALLED_SKILLS=()
 declare -a INSTALLED_RULES=()
@@ -95,7 +109,7 @@ for cat in $CATEGORIES; do
 
     # skill
     mkdir -p "$CLAUDE_SKILLS/$name"
-    cp "$skill_md" "$CLAUDE_SKILLS/$name/SKILL.md"
+    strip_paths "$skill_md" > "$CLAUDE_SKILLS/$name/SKILL.md"
     INSTALLED_SKILLS+=("$name")
 
     # generated thin-pointer cursor rule

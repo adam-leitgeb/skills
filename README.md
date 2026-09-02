@@ -26,6 +26,14 @@ Each skill is a folder with a `SKILL.md` (`name` + `description` frontmatter,
 optional `paths:` globs). To add or change a convention, **edit the SKILL.md** —
 never the generated `.cursor/rules/*.mdc`.
 
+`paths:` is **Cursor-only**: it becomes the generated rule's `globs:`, and the sync
+strips it from the `SKILL.md` it installs into `.claude/skills/`. Claude Code has no
+path-scoping — a skill whose frontmatter carries `paths:` is dropped from the model's
+skill list, so it never loads at all. Scope for Claude through the `description`
+instead ("Use when writing or editing Kotlin or Swift"); for a rule that must hold on
+*every* edit, put the rule itself in the project's `CLAUDE.md`, which is always in
+context, and keep the skill for the detail.
+
 ## Using it in a project
 
 Copy the `update_skills` target from `Makefile.template` into the project's

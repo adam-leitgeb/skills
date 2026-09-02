@@ -20,6 +20,11 @@ automatic — the sync globs the category, so the new skill ships on the next
 `make update_skills`. No config changes. (Just write the `SKILL.md` with `name`
 + `description` frontmatter, and `paths:` globs if it's path-scoped.)
 
+`paths:` scopes the **Cursor** rule only. The sync strips it from the installed
+`SKILL.md`, because Claude Code drops a skill whose frontmatter carries an unknown
+key — silently, with no error and no entry in the model's skill list. Claude picks
+a skill up from its `description`, so make the description say when it applies.
+
 ## When you DO need to keep things in sync
 
 - **New category** (a new folder of skills, e.g. `engineering/desktop`): map it
