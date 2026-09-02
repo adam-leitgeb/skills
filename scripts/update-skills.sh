@@ -10,6 +10,9 @@
 #     from project-types.conf.
 #   * Installs every skill in those categories into <project>/.claude/skills/,
 #     and generates a matching thin-pointer rule in <project>/.cursor/rules/.
+#   * For a skill with `paths:` globs, also generates a path-scoped rule in
+#     <project>/.claude/rules/ carrying the skill body, so Claude Code has the
+#     rule in context whenever it reads a matching file.
 #   * Removes ONLY what a previous run installed (tracked in a manifest), so
 #     project-specific skills and hand-written rules are preserved.
 set -euo pipefail
@@ -51,6 +54,7 @@ CATEGORIES="$(categories_for "$TYPE")"
 echo "Type '$TYPE' -> categories: $CATEGORIES"
 
 CLAUDE_SKILLS="$PROJECT_DIR/.claude/skills"
+CLAUDE_RULES="$PROJECT_DIR/.claude/rules"
 CURSOR_RULES="$PROJECT_DIR/.cursor/rules"
 MANIFEST="$CLAUDE_SKILLS/.managed"
 META_RULE="claude-skills-source-of-truth.mdc"
@@ -59,8 +63,9 @@ META_RULE="claude-skills-source-of-truth.mdc"
 if [[ -f "$MANIFEST" ]]; then
   while IFS= read -r line; do
     case "$line" in
-      skill:*) rm -rf "$CLAUDE_SKILLS/${line#skill:}" ;;
-      rule:*)  rm -f  "$CURSOR_RULES/${line#rule:}" ;;
+      skill:*)       rm -rf "$CLAUDE_SKILLS/${line#skill:}" ;;
+      rule:*)        rm -f  "$CURSOR_RULES/${line#rule:}" ;;
+      claude-rule:*) rm -f  "$CLAUDE_RULES/${line#claude-rule:}" ;;
     esac
   done < "$MANIFEST"
   rm -f "$MANIFEST"
@@ -70,35 +75,43 @@ mkdir -p "$CLAUDE_SKILLS" "$CURSOR_RULES"
 
 # --- frontmatter helpers --------------------------------------------------
 get_desc() { sed -n 's/^description:[[:space:]]*//p' "$1" | head -1; }
-get_globs() {
+
+# The `paths:` block (header + list items) from the first frontmatter block, verbatim.
+# Empty when the skill has no `paths:`. Blank and comment lines inside the list are dropped.
+get_paths_block() {
   awk '
-    /^paths:[[:space:]]*$/ { inp=1; next }
-    inp && /^[[:space:]]+-/ {
-      v=$0; sub(/^[[:space:]]*-[[:space:]]*/,"",v); gsub(/"/,"",v); gsub(/[[:space:]]+$/,"",v)
-      g = g (g==""?"":",") v; next
-    }
-    inp && /^[^[:space:]]/ { inp=0 }
-    END { print g }
+    NR==1 && /^---[[:space:]]*$/ { fm=1; next }
+    fm && /^---[[:space:]]*$/    { exit }
+    fm && /^paths:[[:space:]]*$/ { inp=1; print; next }
+    inp && /^[[:space:]]+-/      { print; next }
+    inp && /^[^[:space:]]/       { exit }
   ' "$1"
 }
 
-# `paths:` is Cursor-only — it feeds the generated rule's `globs:` above. Claude Code
-# rejects a SKILL.md whose frontmatter carries it: the skill is dropped from the model's
-# skill list entirely, so the convention silently never applies. Strip it on the way in.
-strip_paths() {
+# Cursor `globs:` value: the paths list joined with commas.
+get_globs() {
+  get_paths_block "$1" | awk '
+    /^[[:space:]]+-/ {
+      v=$0; sub(/^[[:space:]]*-[[:space:]]*/,"",v); gsub(/"/,"",v); gsub(/[[:space:]]+$/,"",v)
+      g = g (g==""?"":",") v
+    }
+    END { print g }
+  '
+}
+
+# Everything after the first frontmatter block.
+get_body() {
   awk '
-    NR==1 && /^---[[:space:]]*$/ { fm=1; print; next }
-    fm && /^---[[:space:]]*$/    { fm=0; print; next }
-    fm && /^paths:[[:space:]]*$/ { skip=1; next }
-    fm && skip && /^[[:space:]]+-/ { next }
-    fm && skip { skip=0 }
-    { print }
+    NR==1 && /^---[[:space:]]*$/ { fm=1; next }
+    fm && /^---[[:space:]]*$/    { fm=0; body=1; next }
+    body { print }
   ' "$1"
 }
 
 # --- install selected skills ---------------------------------------------
 declare -a INSTALLED_SKILLS=()
 declare -a INSTALLED_RULES=()
+declare -a INSTALLED_CLAUDE_RULES=()
 
 for cat in $CATEGORIES; do
   cat_dir="$SKILLS_ROOT/$cat"
@@ -109,12 +122,33 @@ for cat in $CATEGORIES; do
 
     # skill
     mkdir -p "$CLAUDE_SKILLS/$name"
-    strip_paths "$skill_md" > "$CLAUDE_SKILLS/$name/SKILL.md"
+    cp "$skill_md" "$CLAUDE_SKILLS/$name/SKILL.md"
     INSTALLED_SKILLS+=("$name")
 
-    # generated thin-pointer cursor rule
     desc="$(get_desc "$skill_md")"
+    paths_block="$(get_paths_block "$skill_md")"
     globs="$(get_globs "$skill_md")"
+    body="$(get_body "$skill_md")"
+
+    if grep -q '^paths:' "$skill_md" && [[ -z "$globs" || -z "$body" ]]; then
+      echo "  warning: $name — paths: must be a YAML list inside a closed frontmatter block; no Claude rule generated" >&2
+    fi
+
+    # generated path-scoped Claude Code rule: the skill body, in context whenever
+    # Claude reads a matching file (a skill alone only shows its description).
+    if [[ -n "$globs" && -n "$body" ]]; then
+      mkdir -p "$CLAUDE_RULES"
+      {
+        echo "---"
+        echo "$paths_block"
+        echo "---"
+        echo "<!-- Generated from .claude/skills/$name/SKILL.md by fosh-labs/skills. Edit the skill, not this file. -->"
+        echo "$body"
+      } > "$CLAUDE_RULES/$name.md"
+      INSTALLED_CLAUDE_RULES+=("$name.md")
+    fi
+
+    # generated thin-pointer cursor rule
     rule_file="$CURSOR_RULES/$name.mdc"
     {
       echo "---"
@@ -166,7 +200,8 @@ INSTALLED_RULES+=("$META_RULE")
   echo "type=$TYPE"
   for name in "${INSTALLED_SKILLS[@]}"; do echo "skill:$name"; done
   for rule in "${INSTALLED_RULES[@]}"; do echo "rule:$rule"; done
+  for rule in "${INSTALLED_CLAUDE_RULES[@]+"${INSTALLED_CLAUDE_RULES[@]}"}"; do echo "claude-rule:$rule"; done
 } > "$MANIFEST"
 
-echo "Installed ${#INSTALLED_SKILLS[@]} skills + ${#INSTALLED_RULES[@]} rules into $PROJECT_DIR"
+echo "Installed ${#INSTALLED_SKILLS[@]} skills + ${#INSTALLED_CLAUDE_RULES[@]} Claude rules + ${#INSTALLED_RULES[@]} Cursor rules into $PROJECT_DIR"
 echo "Manifest: $MANIFEST"

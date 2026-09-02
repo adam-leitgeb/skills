@@ -24,15 +24,23 @@ Makefile.template      # the `update_skills` target projects copy in
 
 Each skill is a folder with a `SKILL.md` (`name` + `description` frontmatter,
 optional `paths:` globs). To add or change a convention, **edit the SKILL.md** —
-never the generated `.cursor/rules/*.mdc`.
+never a generated file (`.cursor/rules/*.mdc`, `.claude/rules/*.md`).
 
-`paths:` is **Cursor-only**: it becomes the generated rule's `globs:`, and the sync
-strips it from the `SKILL.md` it installs into `.claude/skills/`. Claude Code has no
-path-scoping — a skill whose frontmatter carries `paths:` is dropped from the model's
-skill list, so it never loads at all. Scope for Claude through the `description`
-instead ("Use when writing or editing Kotlin or Swift"); for a rule that must hold on
-*every* edit, put the rule itself in the project's `CLAUDE.md`, which is always in
-context, and keep the skill for the detail.
+### `paths:` — conventions that must hold on every matching edit
+
+A skill's body reaches the model only when the skill is invoked; until then the
+model sees its one-line `description`. `paths:` on a skill makes it a *conditional*
+skill — Claude Code lists it only after a matching file has been read — but that
+still only lists it. So for a skill with `paths:`, the sync also generates a
+**path-scoped rule**, `.claude/rules/<name>.md`: the same globs, the same body.
+Claude Code puts a path-scoped rule into context the moment it reads a matching
+file, in subagents too, so the rule text itself — not just its description — is in
+front of the model whenever it works on a `.kt` or `.swift` file. Rules trigger on
+reads, not writes: a brand-new file written without reading a sibling first does not
+fire one.
+
+`paths:` is a real Claude Code frontmatter field, so the installed `SKILL.md` keeps
+it verbatim; the same globs become the Cursor rule's `globs:`.
 
 ## Using it in a project
 
@@ -45,7 +53,8 @@ make update_skills TYPE=kmp   # non-interactive
 ```
 
 This clones the repo to a temp dir, installs the skills for the chosen type into
-`.claude/skills/`, generates matching `.cursor/rules/*.mdc` pointers plus a
+`.claude/skills/`, generates a path-scoped `.claude/rules/<name>.md` for each skill
+with `paths:`, generates matching `.cursor/rules/*.mdc` pointers plus a
 `claude-skills-source-of-truth.mdc` meta-rule, and cleans up after itself.
 
 Point `SKILLS_REPO` at this repo
@@ -72,7 +81,7 @@ Edit that file to add a type or remix the mapping; the next sync picks it up.
 
 The sync tracks exactly what it installed in `.claude/skills/.managed`. On each
 run it removes only those entries before reinstalling. **Anything not in the
-manifest** — a hand-written `.claude/skills/<x>/` or a local `.cursor/rules/*.mdc`
-— is never touched. So a project can keep its own skills alongside the shared
+manifest** — a hand-written `.claude/skills/<x>/`, a local `.claude/rules/*.md`, or
+a local `.cursor/rules/*.mdc` — is never touched. So a project can keep its own skills alongside the shared
 ones (e.g. Guardian's `ticket-spec`, which stays local because it's hardwired to
 Guardian's Notion).

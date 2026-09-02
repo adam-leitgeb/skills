@@ -20,10 +20,11 @@ automatic — the sync globs the category, so the new skill ships on the next
 `make update_skills`. No config changes. (Just write the `SKILL.md` with `name`
 + `description` frontmatter, and `paths:` globs if it's path-scoped.)
 
-`paths:` scopes the **Cursor** rule only. The sync strips it from the installed
-`SKILL.md`, because Claude Code drops a skill whose frontmatter carries an unknown
-key — silently, with no error and no entry in the model's skill list. Claude picks
-a skill up from its `description`, so make the description say when it applies.
+`paths:` is what makes a convention hold on every matching edit: the sync
+generates a path-scoped `.claude/rules/<name>.md` from the skill body, which Claude
+Code puts in context whenever it reads a matching file. Without `paths:` the model
+sees only the skill's `description` until it chooses to invoke the skill. The
+mechanism is spelled out in the README.
 
 ## When you DO need to keep things in sync
 
@@ -41,13 +42,16 @@ the `SKILL.md` here; the sync regenerates the pointers.
 
 ## Verify before committing
 
-Sync into a throwaway dir for each affected type and confirm the installed set:
+Sync into a throwaway dir for each affected type and confirm the installed set.
+Every skill with `paths:` must appear under `rules:` too.
 
 ```sh
 for t in kmp backend ios other; do
   tmp="$(mktemp -d)"
-  bash scripts/update-skills.sh --type "$t" --project "$tmp" >/dev/null \
-    && { printf '%s: ' "$t"; ls "$tmp/.claude/skills" | grep -v '^.managed$' | paste -sd' ' -; }
+  bash scripts/update-skills.sh --type "$t" --project "$tmp" >/dev/null && {
+    printf '%s\n  skills: ' "$t"; ls "$tmp/.claude/skills" | grep -v '^.managed$' | paste -sd' ' -
+    printf '  rules:  '; ls "$tmp/.claude/rules" 2>/dev/null | paste -sd' ' -; echo
+  }
   rm -rf "$tmp"
 done
 ```
