@@ -1,13 +1,3 @@
----
-name: code-comments
-description: When to write code comments — none by default; code carries its own meaning. Use when writing or editing Kotlin or Swift.
-paths:
-  - "**/*.kt"
-  - "**/*.kts"
-  - "**/*.swift"
-user-invocable: false
----
-
 # Code Comments
 
 Write no comments by default. Code must be self-explanatory through its

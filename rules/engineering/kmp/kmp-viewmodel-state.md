@@ -1,10 +1,7 @@
 ---
-name: kmp-viewmodel-state
-description: How to shape ViewModel State in a KMP project — sealed renderings vs a status field, deriving UI state instead of storing flags, and where errors live. Use when writing or editing a ViewModel, its State, or a presentation state model.
 paths:
   - "**/*ViewModel.kt"
   - "**/*State.kt"
-user-invocable: false
 ---
 
 # ViewModel State

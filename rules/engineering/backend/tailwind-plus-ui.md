@@ -1,10 +1,7 @@
 ---
-name: tailwind-plus-ui
-description: Use when editing admin console UI (Go html/template + HTMX under internal/admin/) or pasting Tailwind Plus HTML blocks. Enforces using blocks verbatim, @tailwindplus/elements for animated drawers/dropdowns/dialogs/popovers, no other component libraries.
 paths:
   - "internal/admin/**/*"
   - "reference/**/*.html"
-user-invocable: false
 ---
 
 ## UI approach (admin console)
