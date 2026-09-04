@@ -20,7 +20,7 @@ rules/                 # conventions that apply on their own, same categories
   engineering/
     common/            #     code-comments (every session), ui-conventions
     kmp/               #     kotlin-multiplatform-architecture, kmp-viewmodel-state
-    ios/               #     ios-swiftui-patterns
+    ios/               #     ios-swiftui-patterns, swift-code-style
     backend/           #     go-naming, tailwind-plus-ui
 project-types.conf     # project type -> categories mapping
 scripts/

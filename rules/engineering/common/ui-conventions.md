@@ -20,9 +20,22 @@ pointed at from the platform skills.
 
 ## Action Naming
 
-Action methods and callbacks are `onActionName()` — `onTapContinue()`,
-`onSelectCountry()` — and take only what the UI knows
-(`onSelectRow(id: String)`, not `onSelectRow(row: RowState)`).
+Actions take only what the UI knows (`id: String`, not `row: RowState`) on
+both platforms. The names split by platform:
+
+- **Kotlin** (shared ViewModels, Compose callbacks): `onActionName()` —
+  `onTapContinue()`, `onSelectCountry()`.
+- **Swift methods** follow Apple's API design guidelines (adopted via
+  `swift-code-style`): no `on` prefix on methods. A UI-event handler is
+  `didTapContinue()`; a method named for its effect is an imperative verb
+  phrase (`submitEmail()`, `dismissError()`).
+- **Closure properties and parameters** keep the `on` prefix on both
+  platforms — `state.onSendTap`, `onAction:` — matching SwiftUI/Compose
+  idiom (`onDelete`, `onClick`).
+
+Swift code calling a shared Kotlin ViewModel uses the Kotlin names as-is
+(`viewModel.onTapContinue()`); the Swift rule governs methods declared in
+Swift.
 
 ## MARK Sections
 
