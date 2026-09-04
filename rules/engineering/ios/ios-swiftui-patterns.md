@@ -1,9 +1,6 @@
 ---
-name: ios-swiftui-patterns
-description: SwiftUI patterns for the iOS app in a KMP project — view structure, view models, KMP interop. Use when writing or editing SwiftUI.
 paths:
   - "**/*.swift"
-user-invocable: false
 ---
 
 # iOS SwiftUI Patterns & Rules

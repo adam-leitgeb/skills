@@ -1,10 +1,7 @@
 ---
-name: ui-conventions
-description: Cross-platform UI conventions — View/Screen suffixes, action naming, MARK section organization. Use when writing or editing SwiftUI views, Compose screens, or ViewModel actions.
 paths:
   - "**/*.swift"
   - "**/*.kt"
-user-invocable: false
 ---
 
 # UI Conventions

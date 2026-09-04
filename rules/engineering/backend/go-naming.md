@@ -1,9 +1,6 @@
 ---
-name: go-naming
-description: Go naming conventions — prefer full descriptive names over abbreviations, with a short-name exception list (ctx, err, id, receivers) that Go idiom requires. Use when writing or editing Go code.
 paths:
   - "**/*.go"
-user-invocable: false
 ---
 
 # Go Naming: Prefer Full Descriptive Names

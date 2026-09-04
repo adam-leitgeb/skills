@@ -1,9 +1,6 @@
 ---
-name: kotlin-multiplatform-architecture
-description: Kotlin Multiplatform Clean Architecture conventions — module/layer structure, MVVM, Koin DI, naming. Use when writing or editing Kotlin (.kt/.kts) in a KMP project.
 paths:
   - "**/*.kt"
-user-invocable: false
 ---
 
 # Kotlin Multiplatform Clean Architecture Rules
