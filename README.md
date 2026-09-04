@@ -49,6 +49,10 @@ list and never reads the text. That is what this split fixes.
 Both are written in exactly the format Claude Code reads and installed verbatim. To
 add or change one, edit the file here — never a generated `.cursor/rules/*.mdc`.
 
+Cursor gets the same conventions: every skill and rule becomes a `.cursor/rules/*.mdc`
+pointer to its file, with a rule's `paths:` as the pointer's `globs:` and
+`alwaysApply: true` for a rule that has none.
+
 ## Using it in a project
 
 Copy the `update_skills` target from `Makefile.template` into the project's
