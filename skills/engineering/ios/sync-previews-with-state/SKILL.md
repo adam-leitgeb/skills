@@ -6,7 +6,7 @@ user-invocable: false
 
 # Sync Previews When ViewModel State Changes
 
-Whenever you add, remove, or rename a property on a `ViewModel.State` data class, **immediately update every preview that constructs that State**.
+Whenever you add, remove, or rename a property on a `ViewModel.UiState` data class, **immediately update every preview that constructs that State**.
 
 ## SwiftUI (`#Preview` / `_Preview`)
 
@@ -14,7 +14,7 @@ Whenever you add, remove, or rename a property on a `ViewModel.State` data class
 // ✅ After adding `pages` and `currentPageId` to State:
 #Preview {
     Content(
-        state: OnboardingViewModel.State(
+        state: OnboardingViewModel.UiState(
             primaryButtonTitle: "Get Started",
             pages: [],          // new field — include it
             currentPageId: ""   // new field — include it
@@ -33,7 +33,7 @@ Whenever you add, remove, or rename a property on a `ViewModel.State` data class
 @Composable
 fun OnboardingScreenPreview() {
     OnboardingScreen(
-        state = OnboardingViewModel.State(
+        state = OnboardingViewModel.UiState(
             primaryButtonTitle = "Get Started",
             pages = emptyList(),      // new field
             currentPageId = "",       // new field
@@ -55,7 +55,7 @@ Treat the `+Preview` file as part of the same edit, never a follow-up.
 
 ## Rules
 
-- Named arguments in previews must stay in sync with the `State` data class signature.
+- Named arguments in previews must stay in sync with the `UiState` data class signature.
 - If a new field has no sensible default, supply a representative stub value in the preview.
 - Never leave a preview with a stale / missing field — it will fail to compile.
 - The same applies to `{ModelName}+Preview.kt` helper files — update them in lockstep with the State model.

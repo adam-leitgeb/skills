@@ -22,7 +22,7 @@ struct FeatureView: View {
 }
 
 private struct Content: View {
-    let state: FeatureViewModel.State
+    let state: FeatureViewModel.UiState
 
     var body: some View {
         // UI implementation
@@ -30,7 +30,7 @@ private struct Content: View {
 }
 ```
 
-Callbacks are closure fields **on the shared `State`** (`state.onSendTap`), wired once in
+Callbacks are closure fields **on the shared `UiState`** (`state.onSendTap`), wired once in
 the ViewModel's `init` — see `kmp-viewmodel-state`. `Content` therefore usually takes only
 `state`. When a State doesn't carry its callbacks (older screens), pass them into
 `Content` as parameters instead; don't reach into `viewModel` from `Content` either way.
@@ -235,8 +235,8 @@ private var navigationButton: some View {
 
 ### Preview with State
 For Content views, build state through the shared `+Preview` factories, never a
-hand-built `State(...)` initializer — factories survive renames and added fields,
-and a sealed `State` has no callable constructor (see `state-model-preview-helpers`):
+hand-built `UiState(...)` initializer — factories survive renames and added fields,
+and a sealed `UiState` has no callable constructor (see `state-model-preview-helpers`):
 ```swift
 @available(iOS 17.0, *)
 #Preview {

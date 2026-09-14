@@ -1,6 +1,7 @@
 ---
 paths:
   - "**/*ViewModel.kt"
+  - "**/*UiState.kt"
   - "**/*State.kt"
 ---
 
@@ -22,7 +23,7 @@ Apply this test to whatever condition you are modelling:
 
 > **While this is true, can the user still see and use the content?**
 
-- **No** → a **sealed `State` variant**. Fields that don't exist yet shouldn't be
+- **No** → a **sealed `UiState` variant**. Fields that don't exist yet shouldn't be
   declared yet.
 - **Yes** → a **status field on the content state**. The content stays on screen;
   only affordances change.
@@ -42,14 +43,14 @@ sense and only affordances change, it's a status.
 ### Sealed — exclusive renderings
 
 ```kotlin
-sealed class State : ViewModelState {
-    data object Loading : State()
-    data class Error(val model: ErrorStateModel) : State()
-    data class Empty(val model: EmptyStateModel) : State()
+sealed class UiState : ViewModelState {
+    data object Loading : UiState()
+    data class Error(val model: ErrorStateModel) : UiState()
+    data class Empty(val model: EmptyStateModel) : UiState()
     data class Content(
         val title: String = FeatureStrings.title(),
         val rows: List<RowState> = emptyList(),
-    ) : State()
+    ) : UiState()
 }
 ```
 
@@ -57,7 +58,7 @@ Guard actions by narrowing, and return when the screen has moved on:
 
 ```kotlin
 fun onSelectRow(id: String) {
-    val content = state as? State.Content ?: return
+    val content = state as? UiState.Content ?: return
     state = content.copy(selectedId = id)
 }
 ```
@@ -73,14 +74,14 @@ sealed class SubmitStatus {
 }
 ```
 
-Declare it **top level** in the presentation package, not nested in `State` or the
-ViewModel. Top level it stays `SubmitStatus.Failed` in Swift; nested inside `State`
+Declare it **top level** in the presentation package, not nested in `UiState` or the
+ViewModel. Top level it stays `SubmitStatus.Failed` in Swift; nested inside `UiState`
 it reaches Swift as a flattened concatenation
 (`{FeatureName}ViewModelStateSubmitStatusFailed`).
 
 > **Why.** The Obj-C export preserves **one level** of class nesting —
-> `{FeatureName}ViewModel.State` keeps its dotted path, which is what the SwiftUI
-> `Content` struct declares — and flattens anything deeper (a status inside `State`
+> `{FeatureName}ViewModel.UiState` keeps its dotted path, which is what the SwiftUI
+> `Content` struct declares — and flattens anything deeper (a status inside `UiState`
 > or the ViewModel puts its members at depth two). Members of a *sealed interface*
 > flatten at any depth: an interface exports as an Obj-C protocol, which cannot
 > nest types, so `TemplateAppScene.Initial` arrives as `TemplateAppSceneInitial` —
@@ -94,7 +95,7 @@ The normal end state for a screen that loads *and* submits:
 data class Content(
     val rows: List<RowState> = emptyList(),
     val submit: SubmitStatus = SubmitStatus.Idle,
-) : State()
+) : UiState()
 ```
 
 ## One status, never a set of booleans
@@ -105,7 +106,7 @@ places at once, kept consistent by hand.
 ```kotlin
 // ✗ four representations of "where is this request"
 private var isSubmitting = false
-data class State(
+data class UiState(
     val isLoading: Boolean = false,
     val isSubmitted: Boolean = false,
     val submitButton: ButtonState,   // carries its own isLoading / isEnabled
@@ -131,7 +132,7 @@ State stores what the user typed or chose, plus the status. Everything the UI
 renders is a computed `val`.
 
 ```kotlin
-data class State(
+data class UiState(
     val input: String = "",
     val status: SubmitStatus = SubmitStatus.Idle,
     val onSubmitTap: () -> Unit = {},
@@ -173,10 +174,10 @@ literals (see `state-model-preview-helpers`).
 
 This applies to **derived sub-states too**: a string resolved inside the
 `phoneNumberRow`-style getter above is just as unreachable by a preview factory. Store
-the copy on `State` and pass it into the derived value:
+the copy on `UiState` and pass it into the derived value:
 
 ```kotlin
-data class State(
+data class UiState(
     val submitTitle: String = FeatureStrings.submit(),   // preview can override
     val status: SubmitStatus = SubmitStatus.Idle,        // preview can vary
 ) : ViewModelState {
@@ -284,7 +285,12 @@ Existing throwing use cases are fine; migrate only with a reason.
 
 ## Conventions
 
-- `State` is nested in the ViewModel and implements `ViewModelState`; sealed status
+- The nested type is named **`UiState`**, never `State`. Swift's importer stopped
+  resolving a type called `State` nested in a ViewModel as of Xcode 26.6 — every
+  `Content(state: viewModel.state)` failed with `cannot convert 'Shared.X.State' to
+  'Shared.X.State'`, two types printing under one name, and the iOS app would not build
+  at all. The name is load-bearing, not taste.
+- `UiState` is nested in the ViewModel and implements `ViewModelState`; sealed status
   types are top level in the same presentation package.
 - Update with `state = state.copy(...)` — state is always immutable.
 - Action naming and `// MARK: -` section sets: the rules live in `ui-conventions`.

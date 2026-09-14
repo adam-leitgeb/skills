@@ -23,7 +23,7 @@ structure, same state, same behavior. Read the whole iOS view first, then transl
 2. **Create the screen** — `composeApp/src/androidMain/.../features/{feature_name}/{FeatureName}Screen.kt`.
 3. **Mirror the structure** using the template and translation tables below.
 4. **Register navigation** (see [Navigation](#navigation)).
-5. Build; the shared ViewModel and its `State` compile-check most mismatches.
+5. Build; the shared ViewModel and its `UiState` compile-check most mismatches.
 
 ## Screen structure
 
@@ -50,7 +50,7 @@ fun {FeatureName}Screen(navController: NavController) {
 
 @Composable
 private fun Content(
-    state: {FeatureName}ViewModel.State,
+    state: {FeatureName}ViewModel.UiState,
     onAction1: () -> Unit,
     onAction2: (String) -> Unit,
 ) {
