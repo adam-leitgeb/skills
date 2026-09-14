@@ -15,7 +15,7 @@ paths:
 - Each feature should have clear separation between these layers
 
 ### MVVM Pattern
-- ViewModels extend `BaseViewModel<State>` (state and ViewModel machinery only) or `NavigationViewModel<State>` (adds navigation)
+- ViewModels extend `BaseViewModel<UiState>` (state and ViewModel machinery only) or `NavigationViewModel<UiState>` (adds navigation)
 - Use `NavigationViewModel` for screen ViewModels that use navigation (`navigate()`, `NavigationState`); use `BaseViewModel` for screens that do not
 - State is nested inside the ViewModel and implements `ViewModelState`
 - Navigation is handled through `NavigationState` and `navigate()` on `NavigationViewModel` (from navigation kit)
@@ -104,7 +104,7 @@ needs it, or when several features do.
 - UseCases: `FeatureNameUseCase` with nested implementations
 - Repositories: `FeatureNameRepository` (interface) and `FeatureNameRepositoryImpl`
 - DI Modules: `featureNameModule`
-- State classes: `State` (nested in ViewModel)
+- State classes: `UiState` (nested in ViewModel)
 - Action methods: `onActionName()` — the rule lives in `ui-conventions`
 
 A UseCase or Repository **inside a feature folder** carries the full feature

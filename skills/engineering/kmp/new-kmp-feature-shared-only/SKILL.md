@@ -36,8 +36,8 @@ Derive, per `new-kmp-feature`'s naming table:
 question below on their own — a control that leaves the screen means
 `NavigationViewModel`. Then ask **only what is still open**, and at most these two:
 
-1. **Does the screen navigate away?** → `NavigationViewModel<State>` vs
-   `BaseViewModel<State>`. Ask only if there are no frames, or none of them shows a
+1. **Does the screen navigate away?** → `NavigationViewModel<UiState>` vs
+   `BaseViewModel<UiState>`. Ask only if there are no frames, or none of them shows a
    way off the screen and the prose doesn't say either.
 2. **Where does its data come from?** — an existing repository/API, a new one, or
    nothing yet. Frames rarely answer this one.
@@ -46,14 +46,14 @@ Anything else you can't infer becomes a `TODO` in the scaffold, not a question.
 
 ## 2. Build the shared module in full
 
-Do every step of `new-kmp-feature` §1 (feature directories, ViewModel + `State`,
+Do every step of `new-kmp-feature` §1 (feature directories, ViewModel + `UiState`,
 `+Preview` factories, use cases, repository, DI module, `featureModule.kt`
 registration) and §2 (scene in `AppScene.kt`, Android `mapToDestination.kt`, the
 three iOS `AppScene*.swift` files, analytics key if the project has analytics).
 
 **How complete should the shared code be?** As complete as the request allows:
 
-- Behavior the user described → implement it for real. A `State` shaped per
+- Behavior the user described → implement it for real. A `UiState` shaped per
   `kmp-viewmodel-state`, use cases with real bodies, repository calls, error
   taxonomy, `onAppear()` doing the actual load.
 - Behavior the user didn't describe → the `TODO`-stub templates from
@@ -63,7 +63,7 @@ The point of splitting the phases is that the shared half is *finished*, not tha
 it's thinner. When the design arrives, phase two should be writing views against a
 State that already holds everything they need.
 
-**Strings.** Every string the `State` carries needs a key in `localization.json`
+**Strings.** Every string the `UiState` carries needs a key in `localization.json`
 (see `localization-kmp`). A new feature means a new namespace, so **register it in
 `localizationNamespaces` in `shared/build.gradle.kts`** — without that entry the
 codegen emits no `{FeatureName}Strings` and §4's build fails on unresolved
@@ -75,7 +75,7 @@ anywhere — a message behind an error you're stubbing — waits for phase two.
 ### 2.1 Reading the screenshots
 
 The frames tell you the presentation layer. Read all of them before writing the
-`State`; a second frame of the same screen is usually a second rendering, not a
+`UiState`; a second frame of the same screen is usually a second rendering, not a
 second screen.
 
 **Frames → state shape.** Classify each frame with `kmp-viewmodel-state`'s boxed
@@ -86,7 +86,7 @@ same frame are a derived property, not a stored `isEnabled` (same skill, "Store
 input, derive presentation").
 
 **Content → fields.** Anything that could differ per user or per load — labels,
-values, counts, avatars, badge text — is a `State` field. Repeated rows become
+values, counts, avatars, badge text — is a `UiState` field. Repeated rows become
 their own row state model with `previewSingle()` / `previewList()`
 (`state-model-preview-helpers`). Static copy is still a field, per the rule above.
 
@@ -119,8 +119,8 @@ already exactly the placeholder this phase wants, so add nothing to it. Drop
 Tip 4), same as `HandleNavigation` on Android below.
 
 The template's `#Preview` builds state with `.companion.previewSingle()` — the
-factory §2 already created. Don't swap it for a bare `State(...)` initializer: a
-sealed `State` has no callable constructor, and a growing one breaks the preview
+factory §2 already created. Don't swap it for a bare `UiState(...)` initializer: a
+sealed `UiState` has no callable constructor, and a growing one breaks the preview
 on every added field. Call conventions live in `state-model-preview-helpers`.
 
 Register the ViewModel in `KoinDependencies.kt` (§3.2) — without it the view can't
@@ -135,7 +135,7 @@ only the state — drop the `onAction*` arguments the template's `Screen` wires:
 
 ```kotlin
 @Composable
-private fun Content(state: {FeatureName}ViewModel.State) {
+private fun Content(state: {FeatureName}ViewModel.UiState) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = "{FeatureName}")
     }
@@ -189,12 +189,12 @@ say so rather than declaring success.
 
 Two export rules to re-check at this step:
 
-- **Status types belong at top level** — nested inside `State` or the ViewModel
+- **Status types belong at top level** — nested inside `UiState` or the ViewModel
   they flatten into a concatenated name in Swift; top level they stay
-  `SubmitStatus.Failed`. The mechanism — and why `{FeatureName}ViewModel.State`
+  `SubmitStatus.Failed`. The mechanism — and why `{FeatureName}ViewModel.UiState`
   itself is fine — is `kmp-viewmodel-state`, "Status".
 - **Preview helpers take no parameters** — and the deliberate flip side: defaulted
-  constructor params on `State` itself are the convention and stay. Both halves
+  constructor params on `UiState` itself are the convention and stay. Both halves
   are `state-model-preview-helpers`, hard rule 1.
 
 ## 5. Hand off
@@ -218,10 +218,10 @@ Phase two is `ios-swiftui-patterns` for the iOS screen, then
 
 - [ ] Every supplied frame accounted for — as a rendering, a status, or a deliberate skip
 - [ ] Each visible control has an `on{Action}()`; each varying element has a field
-- [ ] Visible copy stored on `State` with keys in `localization.json`, namespace registered in `localizationNamespaces`
-- [ ] `State` (or its sealed base) declares `companion object`; Swift previews call `.companion.previewX()`
+- [ ] Visible copy stored on `UiState` with keys in `localization.json`, namespace registered in `localizationNamespaces`
+- [ ] `UiState` (or its sealed base) declares `companion object`; Swift previews call `.companion.previewX()`
 - [ ] No spacing/color/typography leaked into shared code
-- [ ] Shared feature complete per `new-kmp-feature` §1, `State` shaped per `kmp-viewmodel-state` — nothing stubbed that the request specified
+- [ ] Shared feature complete per `new-kmp-feature` §1, `UiState` shaped per `kmp-viewmodel-state` — nothing stubbed that the request specified
 - [ ] Every registration done — `new-kmp-feature`'s §5 verification checklist passes
 - [ ] iOS view: lifecycle modifiers present (`.handleNavigation` iff `NavigationViewModel`), `Content` still a placeholder
 - [ ] Android screen: registered in `App.kt`, `Content` still a placeholder

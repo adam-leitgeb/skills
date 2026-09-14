@@ -58,11 +58,11 @@ Before starting, decide on:
 
 #### 1.2 Create ViewModel
 - [ ] Create `presentation/{FeatureName}ViewModel.kt`
-  - [ ] Extend `BaseViewModel<State>` if the screen does not navigate; extend `NavigationViewModel<State>` if it uses `navigate()` / `NavigationState`
-  - [ ] Add nested `State : ViewModelState`
+  - [ ] Extend `BaseViewModel<UiState>` if the screen does not navigate; extend `NavigationViewModel<UiState>` if it uses `navigate()` / `NavigationState`
+  - [ ] Add nested `UiState : ViewModelState`
   - [ ] Implement `onAppear()` and the screen's `onXxx()` actions
 
-> **Shape of `State` — sealed renderings vs a status field, deriving UI state
+> **Shape of `UiState` — sealed renderings vs a status field, deriving UI state
 > instead of storing flags, stale results, where errors live — is
 > `kmp-viewmodel-state`. Read it before writing the State.** In short: sealed
 > variants for conditions where the content isn't on screen (loading, error,
@@ -70,7 +70,7 @@ Before starting, decide on:
 > status instead of several booleans, and everything the UI renders derived
 > from it.
 
-- [ ] Add `presentation/{FeatureName}State+Preview.kt` factories (`state-model-preview-helpers`)
+- [ ] Add `presentation/{FeatureName}UiState+Preview.kt` factories (`state-model-preview-helpers`)
 
 #### 1.3 Add Localized Strings
 - [ ] Add the feature's keys to the project's `localization.json` and use the
@@ -223,7 +223,7 @@ val {featureName}Module = module {
   - [ ] Inject ViewModel: `KoinDependencies().{featureName}ViewModel`
   - [ ] Create private `Content` struct
   - [ ] Add lifecycle modifiers: `.onAppear` always; `.handleNavigation` only for a `NavigationViewModel` (see Tip 4)
-  - [ ] Add preview support — the `#Preview` builds state through the `+Preview` factory from §1.2 (`.companion.previewSingle()`), never a bare `State(...)` initializer: a sealed `State` has no callable constructor, and a growing one breaks the preview on every added field
+  - [ ] Add preview support — the `#Preview` builds state through the `+Preview` factory from §1.2 (`.companion.previewSingle()`), never a bare `UiState(...)` initializer: a sealed `UiState` has no callable constructor, and a growing one breaks the preview on every added field
 
 **Template:**
 ```swift
@@ -245,7 +245,7 @@ struct {FeatureName}View: View {
 }
 
 private struct Content: View {
-    let state: {FeatureName}ViewModel.State
+    let state: {FeatureName}ViewModel.UiState
 
     var body: some View {
         VStack {
@@ -282,8 +282,8 @@ private struct Content: View {
 ### 5. Verification Checklist
 
 - [ ] All files compile without errors
-- [ ] ViewModel extends `BaseViewModel<State>` or `NavigationViewModel<State>` (if screen uses navigation)
-- [ ] State implements `ViewModelState`
+- [ ] ViewModel extends `BaseViewModel<UiState>` or `NavigationViewModel<UiState>` (if screen uses navigation)
+- [ ] `UiState` implements `ViewModelState`
 - [ ] Repository created, if the feature needs one
 - [ ] Repository registered as `single` — in the feature module if feature-own, in the shared data module if promoted
 - [ ] DI module registered in `featureModule.kt`
@@ -306,7 +306,7 @@ private struct Content: View {
 | Repository (feature-own) | `{FeatureName}Repository` | `EventListRepository` |
 | Repository (promoted to shared `data/`) | `{Entity}Repository` — no role suffix | `EmergencyContactRepository` |
 | DI Module | `{featureName}Module` | `eventListModule` |
-| State | `State` (nested) | `EventListViewModel.State` |
+| Screen state | `UiState` (nested) | `EventListViewModel.UiState` |
 | Action methods | `on{ActionName}()` | `onTapContinue()`, `onSelectItem()` |
 | iOS View | `{FeatureName}View` | `EventListView` |
 | Package | `{package}.features.{feature_name}` | `{package}.features.event_list` |

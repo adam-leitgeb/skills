@@ -149,7 +149,7 @@ UI ships yet).
 
 ## Rules
 
-- **`State` fields stay plain `String`** — resolve the generated accessor into the field;
+- **`UiState` fields stay plain `String`** — resolve the generated accessor into the field;
   never expose an `XxxStrings` type to the UI.
 - **Anything a preview renders is a stored field with a localized default:**
   `val title: String = ProfileStrings.title()`. A `+Preview` factory can then override it
@@ -158,11 +158,11 @@ UI ships yet).
   out as the raw key.
 - **A computed getter is for fields previews never read:**
   `val title: String get() = ProfileStrings.title()` resolves at *access* rather than at
-  `State()` construction and re-resolves on a language change — but it cannot be
+  `UiState()` construction and re-resolves on a language change — but it cannot be
   overridden, so anything a preview displays must not use one. The same applies to strings
   resolved inside a **derived** sub-state getter: they are unreachable by a preview factory
   for exactly the same reason.
-- **Load-ordering caveat for stored defaults**: they resolve when `State()` is constructed.
+- **Load-ordering caveat for stored defaults**: they resolve when `UiState()` is constructed.
   That is after the map loads for a ViewModel built when its screen appears, but not for
   state constructed during startup — if a raw key shows at runtime, check that ordering
   before reaching for a getter.
