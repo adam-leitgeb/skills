@@ -12,10 +12,11 @@ QA what we just implemented, in the simulators of every platform it ships on.
 2. Spawn sub-agents on the cheapest model tier the harness offers to click through the
    checks and report back pass/fail with screenshots. Give each one everything it needs;
    it sees nothing of this session. Drive iOS with `xcrun simctl` + `axe`, Android with
-   `adb`.
+   `adb`, reading the screen from the accessibility tree rather than screenshots.
 3. Run them in parallel, one simulator per sub-agent, unless the checks would interfere
    through the backend (shared account or data one changes and another reads). Keep those
-   in one agent.
+   in one agent. Boot and install the simulators yourself before spawning, and shut down
+   the ones you started afterwards.
 4. Verify each reported failure yourself before believing it, fix the real ones, and
    retest until it passes.
 5. Report what passed, what you fixed, and what you didn't cover.
