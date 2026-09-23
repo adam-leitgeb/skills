@@ -10,15 +10,20 @@ This governs the code you are writing or changing. Renaming or restructuring
 is the preferred alternative to a comment **within that change**; it is not a
 license to strip comments or rename things in code you weren't asked to touch.
 
-Doc comments (KDoc, Swift `///`) split by visibility. Every `open` or
+Doc comments (KDoc, Swift `///`) split by whether a declaration is public
+*on purpose*. In Swift, where the default is `internal`, every `open` or
 `public` declaration, and every open or public member of one, gets a doc
 comment — that surface is consumed without reading the source (this adopts
-Google's Swift Style Guide requirement; see `swift-code-style`). Shared-module
-KDoc is likewise what iOS callers see in Xcode Quick Help. Say what the
-signature can't — a doc comment that restates the name is noise, and fixing
-the name is the better move. For `internal` and below the no-comments default
-holds: the contract must be clear from signature and naming, and a doc
-comment is justified only where it genuinely can't be.
+Google's Swift Style Guide requirement; see `swift-code-style`). Kotlin is
+`public` by default, so there the requirement covers only a deliberate API: a
+library module's surface, built for callers outside it. App code that is
+public only because Kotlin defaults to it — a shared module's ViewModels,
+UseCases, repositories, or its `library/` infrastructure — is not that
+surface, even though iOS sees it in Xcode Quick Help. Where a doc comment is required, say what the signature
+can't — one that restates the name is noise, and fixing the name is the
+better move. Everything else holds to the no-comments default: the contract
+must be clear from signature and naming, and a doc comment is justified only
+where it genuinely can't be.
 
 Outside this rule's scope — keep writing these where other skills call for them:
 
