@@ -1,6 +1,6 @@
 ---
-name: simulator-qa
-description: QA what was just implemented by driving the app in iOS simulators and Android emulators through cheap sub-agents, then fix and retest. Invoked explicitly as /simulator-qa.
+name: qa
+description: QA what was just implemented by driving the app in iOS simulators and Android emulators through cheap sub-agents, then fix and retest. Invoked explicitly as /qa.
 argument-hint: "<what to test, if not obvious from the session>"
 disable-model-invocation: true
 ---
