@@ -18,8 +18,8 @@ Google's Swift Style Guide requirement; see `swift-code-style`). Kotlin is
 `public` by default, so there the requirement covers only a deliberate API: a
 library module's surface, built for callers outside it. App code that is
 public only because Kotlin defaults to it — a shared module's ViewModels,
-UseCases, repositories — is not that surface, even though iOS sees it in
-Xcode Quick Help. Where a doc comment is required, say what the signature
+UseCases, repositories, or its `library/` infrastructure — is not that
+surface, even though iOS sees it in Xcode Quick Help. Where a doc comment is required, say what the signature
 can't — one that restates the name is noise, and fixing the name is the
 better move. Everything else holds to the no-comments default: the contract
 must be clear from signature and naming, and a doc comment is justified only
