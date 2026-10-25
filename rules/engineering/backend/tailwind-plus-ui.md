@@ -4,6 +4,8 @@ paths:
   - "reference/**/*.html"
 ---
 
+# Tailwind Plus UI
+
 ## UI approach (admin console)
 
 Treat the **Tailwind Plus** HTML blocks as the **design system of record**:
